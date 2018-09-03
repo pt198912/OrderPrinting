@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.order.print">
-
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- 必需的权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -21,6 +28,11 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ui.MainActivity"
             android:screenOrientation="portrait"/>
+
+        <service android:name=".service.OrderJobService" android:process=":process1"/>
+        <receiver android:name=".receiver.Receiver1" android:process=":process1"/>
+        <service android:name=".service.Service2" android:process=":process2"/>
+        <receiver android:name=".receiver.Receiver2" android:process=":process2"/>
     </application>
 
 </manifest>

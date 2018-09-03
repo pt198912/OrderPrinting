@@ -24,4 +24,17 @@ public class IntentUtils {
         }
         cxt.startActivity(intent);
     }
+    public static void startService(Context cxt, Class<?> cls){
+        startService(cxt,cls,null);
+    }
+    public static void startService(Context cxt, Class<?> cls, Bundle bundle){
+        if(cxt==null||cls==null){
+            return;
+        }
+        Intent intent=new Intent(cxt,cls);
+        if(bundle!=null) {
+            intent.putExtra(BUNDLE_KEY_EXTRA, bundle);
+        }
+        cxt.startService(intent);
+    }
 }
