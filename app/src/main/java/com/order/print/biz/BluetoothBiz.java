@@ -57,7 +57,7 @@ public class BluetoothBiz {
     private BluetoothBiz(){
 
     }
-    private void init(){
+    public void init(){
         bindBluetoothService();
     }
 
@@ -207,6 +207,8 @@ public class BluetoothBiz {
     private OnBluetoothStateListener mListener;
     public interface OnBluetoothStateListener{
         void onDiscoveryFinish(ArrayList<BluetoothBean> datas);
+        void onPrintDeviceConnStatusChanged(String address,int status);
+
     }
 
     public void setListener(OnBluetoothStateListener listener) {
@@ -239,10 +241,9 @@ public class BluetoothBiz {
 
         public ConnectThread(String mac, BluetoothDevice device) {
             mmDevice = device;
-            String SPP_UUID = "00001101-0000-1000-8000-00805f9b34fb";
             try {
                 if (socket == null) {
-                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
+                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString(mac));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -255,11 +256,17 @@ public class BluetoothBiz {
                 Log.i(TAG, "run(MainActivity.java:367)--->> " + "连接socket");
                 if (socket.isConnected()) {
                     Log.i(TAG, "run(MainActivity.java:369)--->> " + "已经连接过了");
+                    if(mListener!=null) {
+                        mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_CONNECTED);
+                    }
                 } else {
                     if (socket != null) {
                         try {
                             if (mGpService != null) {
                                 int state = mGpService.getPrinterConnectStatus(0);
+                                if(mListener!=null) {
+                                    mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),state);
+                                }
                                 switch (state) {
                                     case GpDevice.STATE_CONNECTED:
                                         break;
@@ -279,9 +286,15 @@ public class BluetoothBiz {
                                 }
                             } else {
                                 Log.i(TAG,  "mGpService IS NULL");
+                                if(mListener!=null) {
+                                    mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_NONE);
+                                }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
+                            if(mListener!=null) {
+                                mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_NONE);
+                            }
                         }
                     }
                 }

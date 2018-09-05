@@ -39,4 +39,16 @@ public class SharePrefUtil {
     public long getLong(String key) {
         return mSp.getLong(key,0L);
     }
+    public void setString(String key,String s){
+        mSp.edit().putString(key,s).commit();
+    }
+    public void setInt(String key,int s){
+        mSp.edit().putInt(key,s).commit();
+    }
+    public void setFloat(String key,float s){
+        mSp.edit().putFloat(key,s).commit();
+    }
+    public void setLong(String key,long s){
+        mSp.edit().putFloat(key,s).commit();
+    }
 }

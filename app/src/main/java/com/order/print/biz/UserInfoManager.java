@@ -8,6 +8,9 @@ import com.order.print.util.SharePrefUtil;
  */
 
 public class UserInfoManager {
+    private String name;
+    private String pwd;
+    private String token;
     private UserInfoManager(){
 
     }
@@ -26,5 +29,19 @@ public class UserInfoManager {
     }
     public String getPwd(){
         return SharePrefUtil.getInstance().getString(Constants.SP_KEY_PWD);
+    }
+    public void setToken(String token){
+        this.token=token;
+        SharePrefUtil.getInstance().setString(Constants.SP_KEY_TOKEN,token);
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        SharePrefUtil.getInstance().setString(Constants.SP_KEY_USER_NAME,name);
+    }
+
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
+        SharePrefUtil.getInstance().setString(Constants.SP_KEY_PWD,pwd);
     }
 }

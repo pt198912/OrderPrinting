@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -41,7 +41,17 @@ import com.order.print.util.IntentUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBluetoothStateListener{
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
+public class MainActivity extends AppCompatActivity  {
+    @BindView(R.id.tv_search_bluetooth)
+    TextView tvSearchBluetooth;
+    @BindView(R.id.tv_setting)
+    TextView tvSetting;
+    @BindView(R.id.tv_order_list)
+    TextView tvOrderList;
     // JobService，执行系统任务
     private JobSchedulerManager mJobManager;
     // 1像素Activity管理类
@@ -54,27 +64,36 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
     List<BluetoothBean> mBluetoothList;
     PopupWindow pw;
     ProgressDialog pdConnect;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.M) {
+        ButterKnife.bind(this);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             startOrderJobServiceBelowM();
-        }else{
+        } else {
             startOrderJobServiceAboveM();
         }
+
         initPrintBiz();
+        initBluetoothBiz();
     }
 
-    private void initPrintBiz(){
+    private void initPrintBiz() {
         OrderPrintBiz.getInstance().init();
     }
 
-    private void showLoadingDlg(){
+    private void initBluetoothBiz(){
+        BluetoothBiz.getInstance().init();;
+    }
+
+    private void showLoadingDlg() {
         pdSearch = ProgressDialog.show(this, "", "连接中", true, true);
         pdSearch.setCanceledOnTouchOutside(false);
         pdSearch.show();
     }
+
     private ScreenReceiverUtil.SreenStateListener mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {
         @Override
         public void onSreenOn() {
@@ -98,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
             // 解锁，暂不用，保留
         }
     };
+
     private void showSuccessDialog() {
         pdSearch.dismiss();
         DialogInterface.OnClickListener mOnClickListener = new DialogInterface.OnClickListener() {
@@ -151,8 +171,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
 
         View view = LayoutInflater.from(this).inflate(R.layout.layout_bluetooth, null);
         ListView mListView = view.findViewById(R.id.lv_bluetooth);
-        MyBluetoothAdapter myBluetoothAdapter = new MyBluetoothAdapter();
-        mListView.setAdapter(myBluetoothAdapter);
+//        MyBluetoothAdapter myBluetoothAdapter = new MyBluetoothAdapter();
+//        mListView.setAdapter(myBluetoothAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -200,58 +220,29 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
         return dm.widthPixels;
     }
 
-    @Override
-    public void onDiscoveryFinish(ArrayList<BluetoothBean> datas) {
-        mBluetoothList.clear();
-        mBluetoothList.addAll(datas);
-        showBluetoothPop(datas);
-    }
 
-    class MyBluetoothAdapter extends BaseAdapter {
-
-        @Override
-        public int getCount() {
-            return mBluetoothList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return mBluetoothList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(App.getInstance()).inflate(R.layout.item_bluetooth, parent, false);
-                holder = new ViewHolder();
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.item_text = convertView.findViewById(R.id.item_text);
-            holder.item_text_address = convertView.findViewById(R.id.item_text_address);
-            holder.item_text.setText(mBluetoothList.get(position).mBluetoothName);
-            holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
-            return convertView;
-        }
-
-        class ViewHolder {
-            TextView item_text;
-            TextView item_text_address;
+    @OnClick({R.id.tv_search_bluetooth, R.id.tv_setting, R.id.tv_order_list})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.tv_search_bluetooth:
+                IntentUtils.startActivity(this,BluetoothDeviceListActivity.class);
+                break;
+            case R.id.tv_setting:
+                IntentUtils.startActivity(this,SettingActivity.class);
+                break;
+            case R.id.tv_order_list:
+                IntentUtils.startActivity(this,OrderListActivity.class);
+                break;
         }
     }
 
-    private void startOrderJobServiceBelowM(){
+
+
+    private void startOrderJobServiceBelowM() {
         IntentUtils.startService(this, OrderJobService.class);
     }
 
-    private void startOrderJobServiceAboveM(){
+    private void startOrderJobServiceAboveM() {
         // 1. 注册锁屏广播监听器
         mScreenListener = new ScreenReceiverUtil(this);
         mScreenManager = ScreenManager.getScreenManagerInstance(this);
@@ -269,13 +260,14 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
         //  启动播放音乐Service
         startPlayMusicService();
     }
+
     private void stopPlayMusicService() {
         Intent intent = new Intent(this, PlayerMusicService.class);
         stopService(intent);
     }
 
     private void startPlayMusicService() {
-        Intent intent = new Intent(this,PlayerMusicService.class);
+        Intent intent = new Intent(this, PlayerMusicService.class);
         startService(intent);
     }
 
@@ -288,10 +280,11 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
         Intent intent = new Intent(this, DaemonService.class);
         stopService(intent);
     }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // 禁用返回键
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             moveTaskToBack(false);
         }
         return super.onKeyDown(keyCode, event);

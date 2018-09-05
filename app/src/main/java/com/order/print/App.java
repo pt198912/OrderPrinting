@@ -10,6 +10,8 @@ import com.order.print.receiver.Receiver2;
 import com.order.print.service.OrderJobService;
 import com.order.print.service.Service2;
 
+import org.xutils.x;
+
 /**
  * Created by pt198 on 03/09/2018.
  */
@@ -25,6 +27,11 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance=this;
+        initXUtils();
+    }
+    private void initXUtils(){
+        x.Ext.init(this);
+        x.Ext.setDebug(true);//是否输出Debug日志
     }
     @Override
     protected void attachBaseContext(Context base) {

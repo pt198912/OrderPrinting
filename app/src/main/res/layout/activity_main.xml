@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.order.print.ui.MainActivity">
+    tools:context="com.order.print.ui.MainActivity"
+    android:gravity="center">
 
     <TextView
         android:id="@+id/tv_search_bluetooth"
@@ -16,8 +17,25 @@
         android:background="@drawable/bg_white_radius_5"
         android:layout_gravity="center_horizontal"
       />
-    <ListView android:id="@+id/lv_device"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"/>
+    <TextView
+        android:id="@+id/tv_setting"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:text="设置"
+        android:gravity="center"
+        android:background="@drawable/bg_white_radius_5"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        />
+    <TextView
+        android:id="@+id/tv_order_list"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:text="订单列表"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_white_radius_5"
+        android:layout_gravity="center_horizontal"
+        />
+
 </LinearLayout>

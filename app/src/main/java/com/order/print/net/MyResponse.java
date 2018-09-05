@@ -13,7 +13,7 @@ public class MyResponse {
     private boolean status;
     private String message;
     private Object result;
-    private int code;
+    private int code=200;
 
     public boolean isStatus() {
         return status;
