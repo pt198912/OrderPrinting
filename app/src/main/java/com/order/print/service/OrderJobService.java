@@ -4,6 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.order.print.biz.OrderPrintBiz;
+
 /**
  * This Service is Persistent Service. Do some what you want to do here.<br/>
  *
@@ -15,6 +17,7 @@ public class OrderJobService extends Service{
     public void onCreate() {
         super.onCreate();
         //TODO do some thing what you want..
+        OrderPrintBiz.getInstance().init();
     }
 
     @Override

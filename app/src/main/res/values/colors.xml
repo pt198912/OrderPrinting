@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="white">#FFFFFF</color>
+
+    <color name="black90">#383431</color><!--黑色 -->
+    <color name="whitesmoke">#F5F5F5</color><!--烟白色 -->
+    <color name="black">#000000</color><!--黑色 -->
 </resources>

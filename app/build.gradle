@@ -26,4 +26,5 @@ dependencies {
     implementation 'com.alibaba:fastjson:1.2.11'
     implementation project(':LibMarsdaemon')
     implementation files('libs/HwPush_SDK_V2705.jar')
+    implementation files('libs/gprintersdkv22.jar')
 }

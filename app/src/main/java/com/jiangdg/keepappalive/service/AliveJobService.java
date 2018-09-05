@@ -10,10 +10,11 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.jiangdg.keepappalive.SportsActivity;
+
 import com.jiangdg.keepappalive.utils.Contants;
 import com.jiangdg.keepappalive.utils.SystemUtils;
-import com.order.print.ui.MainActivity;
+
+import com.order.print.ui.WelcomeActivity;
 
 /**JobService，支持5.0以上forcestop依然有效
  *
@@ -39,7 +40,7 @@ public class AliveJobService extends JobService {
                 Toast.makeText(getApplicationContext(), "APP活着的", Toast.LENGTH_SHORT)
                         .show();
             }else{
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 Toast.makeText(getApplicationContext(), "APP被杀死，重启...", Toast.LENGTH_SHORT)

@@ -9,7 +9,8 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
-import com.jiangdg.keepappalive.R;
+import com.order.print.R;
+
 
 /** 移除前台Service通知栏标志，这个Service选择性使用
  *
