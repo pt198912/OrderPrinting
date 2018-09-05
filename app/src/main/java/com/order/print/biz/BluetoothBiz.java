@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 
 import com.gprinter.io.GpDevice;
-import com.gprinter.service.GpPrintService;
+import com.gprinter.aidl.GpService;
 import com.order.print.App;
 
 import com.order.print.bean.BluetoothBean;
@@ -44,9 +44,9 @@ public class BluetoothBiz {
 
     Thread mThread;
     BluetoothSocket socket;
-    private GpPrintService mGpService = null;
+    private GpService mGpService = null;
 
-    public void setGpService(GpPrintService gpService) {
+    public void setGpService(GpService gpService) {
         this.mGpService = gpService;
     }
 
@@ -203,7 +203,7 @@ public class BluetoothBiz {
         }
         if (socket != null) {
             try {
-//                mGpService.closePort(0);
+                mGpService.closePort(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -239,8 +239,7 @@ public class BluetoothBiz {
                     if (socket != null) {
                         try {
                             if (mGpService != null) {
-                                int state=0;
-//                                int state = mGpService.getPrinterConnectStatus(0);
+                                int state = mGpService.getPrinterConnectStatus(0);
                                 switch (state) {
                                     case GpDevice.STATE_CONNECTED:
                                         break;
@@ -252,7 +251,7 @@ public class BluetoothBiz {
                                         break;
                                     case GpDevice.STATE_NONE:
                                         Log.i(TAG,  "state:STATE_NONE");
-//                                        mGpService.openPort(0, 4, mmDevice.getAddress(), 0);
+                                        mGpService.openPort(0, 4, mmDevice.getAddress(), 0);
                                         break;
                                     default:
                                         Log.i(TAG,  "state:default");
@@ -270,7 +269,7 @@ public class BluetoothBiz {
                 Log.i(TAG,  "连接失败");
                 try {
                     if (socket != null) {
-//                        mGpService.closePort(0);
+                        mGpService.closePort(0);
                         socket = null;
                     }
                 } catch (Exception closeException) {

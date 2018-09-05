@@ -11,11 +11,12 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.gprinter.aidl.GpService;
 import com.gprinter.command.EscCommand;
 import com.gprinter.command.GpCom;
 import com.gprinter.command.GpUtils;
 import com.gprinter.command.LabelCommand;
-import com.gprinter.service.GpPrintService;
+//import com.gprinter.aidl.GpService;
 import com.order.print.App;
 import com.order.print.util.IntentUtils;
 
@@ -26,7 +27,7 @@ import java.util.Vector;
  */
 
 public class OrderPrintBiz {
-    private GpPrintService mGpService = null;
+    private GpService mGpService = null;
     private static final String TAG = "OrderPrintBiz";
     private static class SingletonInstance{
         private static final OrderPrintBiz INSTANCE=new OrderPrintBiz();
@@ -79,21 +80,21 @@ public class OrderPrintBiz {
         byte[] bytes = GpUtils.ByteTo_byte(datas);
         String str = Base64.encodeToString(bytes, Base64.DEFAULT);
         int rel=0;
-//        try {
-//            rel = mGpService.sendLabelCommand(0, str);
+        try {
+            rel = mGpService.sendLabelCommand(0, str);
             GpCom.ERROR_CODE r = GpCom.ERROR_CODE.values()[rel];
             if (r != GpCom.ERROR_CODE.SUCCESS) {
                 Toast.makeText(App.getInstance(), GpCom.getErrorText(r), Toast.LENGTH_SHORT).show();
             }
-//        } catch (RemoteException e) {
-//            e.printStackTrace();
-//        }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     public void init(){
         bindService();
     }
     private void startService() {
-        IntentUtils.startService(App.getInstance(),GpPrintService.class);
+        IntentUtils.startService(App.getInstance(),GpService.class);
 
     }
 
@@ -101,7 +102,7 @@ public class OrderPrintBiz {
         startService();
         PrinterServiceConnection conn = new PrinterServiceConnection();
         final Intent intent = new Intent();
-        intent.setAction("com.gprinter.aidl.GpPrintService");
+        intent.setAction("com.gprinter.aidl.GpService");
         intent.setPackage(App.getInstance().getPackageName());
         App.getInstance().bindService(intent, conn, Context.BIND_AUTO_CREATE);
     }
@@ -114,8 +115,8 @@ public class OrderPrintBiz {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-//            mGpService = GpPrintService.Stub.asInterface(service);
-//            BluetoothBiz.getInstance().setGpService(mGpService);
+            mGpService = GpService.Stub.asInterface(service);
+            BluetoothBiz.getInstance().setGpService(mGpService);
         }
     }
     public static OrderPrintBiz getInstance() {
