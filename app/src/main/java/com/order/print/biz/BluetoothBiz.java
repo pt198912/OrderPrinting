@@ -5,11 +5,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.util.Log;
 
 
@@ -20,7 +23,9 @@ import com.gprinter.io.GpDevice;
 import com.gprinter.aidl.GpService;
 import com.order.print.App;
 
+import com.order.print.IBluetoothService;
 import com.order.print.bean.BluetoothBean;
+import com.order.print.util.IntentUtils;
 
 
 import java.io.OutputStream;
@@ -35,17 +40,16 @@ import java.util.UUID;
  */
 
 public class BluetoothBiz {
-    private static final String TAG = "BluetoothBiz";
     private ArrayList<BluetoothBean> mBluetoothList;
     BluetoothAdapter adapter;
     MyBroadcastReceiver receiver;
-
     ArrayList<BluetoothBean> mBluetoothList2;
-
     Thread mThread;
     BluetoothSocket socket;
     private GpService mGpService = null;
-
+    private boolean mRegistered;
+    private static final String TAG = "BluetoothBiz";
+    private IBluetoothService mIBlueService;
     public void setGpService(GpService gpService) {
         this.mGpService = gpService;
     }
@@ -53,13 +57,30 @@ public class BluetoothBiz {
     private BluetoothBiz(){
 
     }
+    private void init(){
+        bindBluetoothService();
+    }
+
+    private void bindBluetoothService(){
+        IntentUtils.bindService(App.getInstance(), new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                mIBlueService=IBluetoothService.Stub.asInterface(iBinder);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                mIBlueService=null;
+            }
+        },BluetoothService.class);
+    }
+
     private static class SingletonInstance{
         private static final BluetoothBiz INSTANCE=new BluetoothBiz();
     }
     public static BluetoothBiz getInstance(){
         return SingletonInstance.INSTANCE;
     }
-    private boolean mRegistered;
     public void searchBlueToothDevice(Context context) {
         Log.i(TAG, "searchBlueToothDevice(MainActivity.java:112)--->> " + "searchBlueToothDevice");
 
@@ -94,7 +115,6 @@ public class BluetoothBiz {
 //                break;
 //            }
 //        }
-
         if (adapter.isEnabled()) {
             //开始搜索
             adapter.startDiscovery();
@@ -278,13 +298,4 @@ public class BluetoothBiz {
             }
         }
     }
-
-
-
-
-
-
-
-
-
 }

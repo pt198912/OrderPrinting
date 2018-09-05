@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'com.jakewharton.butterknife'
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -27,4 +27,6 @@ dependencies {
     implementation project(':LibMarsdaemon')
     implementation files('libs/HwPush_SDK_V2705.jar')
     implementation files('libs/gprintersdkv22.jar')
+    implementation 'com.jakewharton:butterknife:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 }

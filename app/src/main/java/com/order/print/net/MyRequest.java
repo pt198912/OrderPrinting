@@ -32,7 +32,9 @@ public class MyRequest {
     public static <T> void sendPostRequest(String url, Map<String, String> paramsMap, MyResponseCallback<T> callBack, Class<T> clazz,boolean resultIsList) {
         sendRequest(HttpMethod.POST, url, paramsMap, callBack, clazz, resultIsList);
     }
-
+    public static <T> void sendPostRequest(String url, Map<String, String> headers,Map<String, String> paramsMap, MyResponseCallback<T> callBack, Class<T> clazz,boolean resultIsList) {
+        sendRequest(HttpMethod.POST, url,headers, paramsMap, callBack, clazz, resultIsList);
+    }
 
     /**
      * @param url       请求地址
@@ -72,9 +74,11 @@ public class MyRequest {
         }
     }
 
-
-
     public static <T> void sendRequest(HttpMethod method, final String url, Map<String, String> paramsMap, final MyResponseCallback<T> callBack, final Class<T> clazz, final boolean resultIsList) {
+        sendRequest(method,url,null,paramsMap,callBack,clazz,resultIsList);
+    }
+
+    public static <T> void sendRequest(HttpMethod method, final String url, Map<String, String> headers,Map<String, String> paramsMap, final MyResponseCallback<T> callBack, final Class<T> clazz, final boolean resultIsList) {
         if (TextUtils.isEmpty(url)) {
             return;
         }
@@ -97,7 +101,11 @@ public class MyRequest {
 //            reParams.addBodyParameter("uId", App.getLoginUser().getuId());
 //        }
 
-
+        if (null != headers && headers.size() > 0) {
+            for (String key : headers.keySet()) {
+                reParams.addHeader(key, headers.get(key));
+            }
+        }
 
         //解析封装参数
         if (null != paramsMap && paramsMap.size() > 0) {
@@ -119,13 +127,13 @@ public class MyRequest {
                 MyResponse response = JSON.parseObject(result, MyResponse.class);
                 if (null != response) {
                     if (response.getCode() != 200) {
-                        callBack.onFailure(new MyException(response.getCode(),response.getMsg()));
+                        callBack.onFailure(new MyException(response.getCode(),response.getMessage()));
                     } else {
-                        if(response.getData()!=null){
+                        if(response.getResult()!=null){
                             if(resultIsList){
-                                callBack.onSuccessList(JSON.parseArray(response.getData().toString(), clazz));
+                                callBack.onSuccessList(JSON.parseArray(response.getResult().toString(), clazz));
                             }else{
-                                callBack.onSuccess(JSON.parseObject(response.getData().toString(), clazz));
+                                callBack.onSuccess(JSON.parseObject(response.getResult().toString(), clazz));
                             }
                         }else{
                             if(resultIsList){

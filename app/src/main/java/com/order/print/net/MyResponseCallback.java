@@ -7,16 +7,11 @@ import java.util.List;
  * Created by hjw on 2018/7/29.
  */
 
-public class MyResponseCallback<T> implements Serializable {
+public interface MyResponseCallback<T> {
 
-    public MyResponseCallback() {
-    }
+    public void onSuccess(T data);
+    public void onSuccessList(List<T> data) ;
 
-    public void onSuccess(T data) {
-    }
-    public void onSuccessList(List<T> data) {
-    }
+    public void onFailure(MyException e) ;
 
-    public void onFailure(MyException e) {
-    }
 }

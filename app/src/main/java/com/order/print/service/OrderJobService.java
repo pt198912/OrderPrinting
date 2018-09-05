@@ -17,7 +17,7 @@ public class OrderJobService extends Service{
     public void onCreate() {
         super.onCreate();
         //TODO do some thing what you want..
-        OrderPrintBiz.getInstance().init();
+
     }
 
     @Override

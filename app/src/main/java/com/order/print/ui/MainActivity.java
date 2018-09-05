@@ -63,7 +63,13 @@ public class MainActivity extends AppCompatActivity implements BluetoothBiz.OnBl
         }else{
             startOrderJobServiceAboveM();
         }
+        initPrintBiz();
     }
+
+    private void initPrintBiz(){
+        OrderPrintBiz.getInstance().init();
+    }
+
     private void showLoadingDlg(){
         pdSearch = ProgressDialog.show(this, "", "连接中", true, true);
         pdSearch.setCanceledOnTouchOutside(false);
