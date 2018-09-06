@@ -33,7 +33,7 @@ public class Order {
     private long create_time;
     private double cj_money;
     private String shop_name;
-    private List<OrderAddr> addr;
+    private OrderAddr addr;
     private List<OrderItem> items;
 
     public int getOrder_id() {
@@ -100,11 +100,11 @@ public class Order {
         this.shop_name = shop_name;
     }
 
-    public List<OrderAddr> getAddr() {
+    public OrderAddr getAddr() {
         return addr;
     }
 
-    public void setAddr(List<OrderAddr> addr) {
+    public void setAddr(OrderAddr addr) {
         this.addr = addr;
     }
 

@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     private void initBluetoothBiz(){
-        BluetoothBiz.getInstance().init();;
+        BluetoothBiz.getInstance().init();
     }
 
     private void showLoadingDlg() {

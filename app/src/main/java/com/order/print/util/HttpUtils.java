@@ -18,13 +18,10 @@ public class HttpUtils {
         paras.put("pass",pwd);
         MyRequest.sendPostRequest(HttpApi.LOGIN,paras,cb,cls,false);
     }
-    public static <T> void queryOrderPage(String name, String pwd, MyResponseCallback<T> cb,Class<T> cls){
-        Map<String,String> paras=new HashMap<>();
-        paras.put("name",name);
-        paras.put("pass",pwd);
+    public static <T> void queryOrderPage( MyResponseCallback<T> cb,Class<T> cls){
         Map<String,String> headers=new HashMap<>();
         headers.put("XX-Token", UserInfoManager.getInstance().getToken());
-        MyRequest.sendPostRequest(HttpApi.QUERY_ORDER,headers,paras,cb,cls,false);
+        MyRequest.sendPostRequest(HttpApi.QUERY_ORDER,headers,null,cb,cls,false);
     }
     public static <T> void updateOrderStatus(String id, String status, MyResponseCallback<T> cb,Class<T> cls){
         Map<String,String> paras=new HashMap<>();

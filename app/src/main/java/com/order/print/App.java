@@ -1,6 +1,7 @@
 package com.order.print;
 
 import android.app.Application;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 
 import com.marswin89.marsdaemon.DaemonClient;
@@ -21,6 +22,15 @@ public class App extends Application {
     private DaemonClient mDaemonClient;
     public static App getInstance() {
         return sInstance;
+    }
+    private BluetoothDevice mConnectedDevice;
+
+    public void setConnectedDevice(BluetoothDevice connectedDevice) {
+        this.mConnectedDevice = connectedDevice;
+    }
+
+    public BluetoothDevice getConnectedDevice() {
+        return mConnectedDevice;
     }
 
     @Override

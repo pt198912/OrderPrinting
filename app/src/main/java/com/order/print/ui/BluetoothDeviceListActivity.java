@@ -1,6 +1,7 @@
 package com.order.print.ui;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -75,35 +76,53 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
     }
     @Override
     public void onDiscoveryFinish(ArrayList<BluetoothBean> datas) {
-        mBluetoothList.clear();
-        mBluetoothList.addAll(datas);
+//        mBluetoothList.clear();
+//        mBluetoothList.addAll(datas);
+//        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDiscoveryFound(BluetoothBean data) {
+        mBluetoothList.add(data);
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onPrintDeviceConnStatusChanged(String address,int status) {
+    public void onPrintDeviceConnStatusChanged(BluetoothDevice device, int status) {
         String desc="";
+        boolean connected=false;
         switch (status) {
             case GpDevice.STATE_CONNECTED:
+                App.getInstance().setConnectedDevice(device);
                 desc="已连接";
+                connected=true;
                 break;
             case GpDevice.STATE_LISTEN:
                 Log.i(TAG,  "state:STATE_LISTEN");
                 desc="未连接";
+                App.getInstance().setConnectedDevice(null);
+                connected=false;
                 break;
             case GpDevice.STATE_CONNECTING:
                 Log.i(TAG, "state:STATE_CONNECTING");
                 desc="连接中";
+                App.getInstance().setConnectedDevice(null);
+                connected=false;
                 break;
             case GpDevice.STATE_NONE:
                 Log.i(TAG,  "state:STATE_NONE");
                 desc="未连接";
+                App.getInstance().setConnectedDevice(null);
+                connected=false;
                 break;
             default:
                 Log.i(TAG,  "state:default");
                 desc="未连接";
+                App.getInstance().setConnectedDevice(null);
+                connected=false;
                 break;
         }
+        final boolean connRes=connected;
         Log.d(TAG, "onPrintDeviceConnStatusChanged: "+desc+","+status);
         runOnUiThread(new Runnable() {
             @Override
@@ -142,14 +161,31 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             }
             holder.item_text = convertView.findViewById(R.id.item_text);
             holder.item_text_address = convertView.findViewById(R.id.item_text_address);
+            holder.tv_conn_state = convertView.findViewById(R.id.tv_conn_state);
             holder.item_text.setText(mBluetoothList.get(position).mBluetoothName);
             holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
+            holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
             return convertView;
         }
-
+        public String bltStatus(int status) {
+            String a = "未知状态";
+            switch (status) {
+                case BluetoothDevice.BOND_BONDING:
+                    a = "连接中";
+                    break;
+                case BluetoothDevice.BOND_BONDED:
+                    a = "连接完成";
+                    break;
+                case BluetoothDevice.BOND_NONE:
+                    a = "未连接/取消连接";
+                    break;
+            }
+            return a;
+        }
         class ViewHolder {
             TextView item_text;
             TextView item_text_address;
+            TextView tv_conn_state;
         }
     }
 

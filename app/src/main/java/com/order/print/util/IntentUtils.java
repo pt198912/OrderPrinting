@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.order.print.util.Constants.BUNDLE_KEY_EXTRA;
 
 /**
@@ -23,6 +24,7 @@ public class IntentUtils {
         if(bundle!=null) {
             intent.putExtra(BUNDLE_KEY_EXTRA, bundle);
         }
+        intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
         cxt.startActivity(intent);
     }
     public static void startService(Context cxt, Class<?> cls){

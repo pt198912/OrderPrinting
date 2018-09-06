@@ -34,6 +34,8 @@ import java.util.HashSet;
 
 import java.util.UUID;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 
 /**
  * Created by pt198 on 04/09/2018.
@@ -96,6 +98,7 @@ public class BluetoothBiz {
         if (!adapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
             App.getInstance().startActivity(intent);
             return;
         }
@@ -151,7 +154,9 @@ public class BluetoothBiz {
                 bluetoothBean.mBluetoothAddress = device.getAddress();
                 bluetoothBean.mBluetoothDevice = adapter.getRemoteDevice(bluetoothBean.mBluetoothAddress);
                 mBluetoothList.add(bluetoothBean);
-
+                if(mListener!=null){
+                    mListener.onDiscoveryFound(bluetoothBean);
+                }
                 Log.i(TAG, "onReceive(MainActivity.java:184)--->> " + device.getName());
                 Log.i(TAG, "onReceive(MainActivity.java:185)--->> " + mBluetoothList.size());
 
@@ -207,7 +212,8 @@ public class BluetoothBiz {
     private OnBluetoothStateListener mListener;
     public interface OnBluetoothStateListener{
         void onDiscoveryFinish(ArrayList<BluetoothBean> datas);
-        void onPrintDeviceConnStatusChanged(String address,int status);
+        void onDiscoveryFound(BluetoothBean data);
+        void onPrintDeviceConnStatusChanged(BluetoothDevice device,int status);
 
     }
 
@@ -238,12 +244,15 @@ public class BluetoothBiz {
     private class ConnectThread extends Thread {
         private BluetoothDevice mmDevice;
         private OutputStream mmOutStream;
-
+        //这条是蓝牙串口通用的UUID，不要更改
+        private UUID myUuid =
+                UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         public ConnectThread(String mac, BluetoothDevice device) {
             mmDevice = device;
+
             try {
                 if (socket == null) {
-                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString(mac));
+                    socket = device.createRfcommSocketToServiceRecord(myUuid);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -257,7 +266,7 @@ public class BluetoothBiz {
                 if (socket.isConnected()) {
                     Log.i(TAG, "run(MainActivity.java:369)--->> " + "已经连接过了");
                     if(mListener!=null) {
-                        mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_CONNECTED);
+                        mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_CONNECTED);
                     }
                 } else {
                     if (socket != null) {
@@ -265,7 +274,7 @@ public class BluetoothBiz {
                             if (mGpService != null) {
                                 int state = mGpService.getPrinterConnectStatus(0);
                                 if(mListener!=null) {
-                                    mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),state);
+                                    mListener.onPrintDeviceConnStatusChanged(mmDevice,state);
                                 }
                                 switch (state) {
                                     case GpDevice.STATE_CONNECTED:
@@ -287,19 +296,22 @@ public class BluetoothBiz {
                             } else {
                                 Log.i(TAG,  "mGpService IS NULL");
                                 if(mListener!=null) {
-                                    mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_NONE);
+                                    mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
                                 }
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                             if(mListener!=null) {
-                                mListener.onPrintDeviceConnStatusChanged(mmDevice.getAddress(),GpDevice.STATE_NONE);
+                                mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
                             }
                         }
                     }
                 }
             } catch (Exception connectException) {
                 Log.i(TAG,  "连接失败");
+                if(mListener!=null) {
+                    mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
+                }
                 try {
                     if (socket != null) {
                         mGpService.closePort(0);
