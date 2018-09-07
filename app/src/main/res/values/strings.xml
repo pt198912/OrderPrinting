@@ -3,4 +3,6 @@
     <string name="phone_number">手机号</string>
     <string name="password">密码</string>
     <string name="login_in">登录</string>
+    <string name="label_no_conn">未连接打印机【点击连接】</string>
+    <string name="label_conncted">打印机%s【已连接】</string>
 </resources>

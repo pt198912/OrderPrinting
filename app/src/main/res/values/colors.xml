@@ -8,4 +8,6 @@
     <color name="black90">#383431</color><!--黑色 -->
     <color name="whitesmoke">#F5F5F5</color><!--烟白色 -->
     <color name="black">#000000</color><!--黑色 -->
+    <color name="color_333333">#333333</color>
+    <color name="color_666666">#666666</color>
 </resources>

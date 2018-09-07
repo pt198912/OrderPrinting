@@ -29,6 +29,7 @@ import com.order.print.util.IntentUtils;
 
 
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -119,6 +120,9 @@ public class BluetoothBiz {
 //            }
 //        }
         if (adapter.isEnabled()) {
+            if(adapter.isDiscovering()){
+                adapter.cancelDiscovery();
+            }
             //开始搜索
             adapter.startDiscovery();
             if(!mRegistered) {
@@ -220,7 +224,15 @@ public class BluetoothBiz {
     public void setListener(OnBluetoothStateListener listener) {
         this.mListener = listener;
     }
-
+    public synchronized void bond(BluetoothDevice device){
+        // 配对
+        try {
+            Method createBondMethod = BluetoothDevice.class.getMethod("createBond");
+            createBondMethod.invoke(device);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * 启动连接蓝牙的线程方法
      */
@@ -239,6 +251,17 @@ public class BluetoothBiz {
         }
         mThread = new ConnectThread(macAddress, device);
         mThread.start();
+    }
+
+    public synchronized void disconnect(){
+        if (socket != null) {
+            try {
+                mGpService.closePort(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            socket = null;
+        }
     }
 
     private class ConnectThread extends Thread {

@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.order.print.App;
 import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.bean.QueryOrderResult;
@@ -18,6 +19,9 @@ import com.order.print.net.MyException;
 import com.order.print.net.MyResponseCallback;
 import com.order.print.util.DialogUtils;
 import com.order.print.util.HttpUtils;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnRefreshLoadMoreListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,6 +29,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult> {
     @BindView(R.id.iv_back)
@@ -35,8 +40,12 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     ImageView ivRight;
     @BindView(R.id.lv_order_list)
     ListView lvOrderList;
+    @BindView(R.id.smart_layout)
+    SmartRefreshLayout smartRefreshLayout;
     List<Order> mDatas = new ArrayList<>();
     OrderListAdapter mAdapter;
+    @BindView(R.id.tv_conn_state)
+    TextView tvConnState;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,22 +53,40 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         setContentView(R.layout.activity_order_list);
         ButterKnife.bind(this);
         initView();
+        DialogUtils.loading(this, "");
         getOrderList();
     }
 
     private void initView() {
+        tvTitle.setText("订单列表");
+        if(App.getInstance().getConnectedDevice()!=null){
+            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),App.getInstance().getConnectedDevice().getAddress()));
+        }else{
+            tvConnState.setText(getResources().getString(R.string.label_no_conn));
+        }
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
+        smartRefreshLayout.setOnRefreshListener(new OnRefreshLoadMoreListener() {
+            @Override
+            public void onLoadMore(RefreshLayout refreshLayout) {
+                getOrderList();
+            }
+
+            @Override
+            public void onRefresh(RefreshLayout refreshLayout) {
+
+            }
+        });
     }
 
     private void getOrderList() {
-        DialogUtils.loading(this, "加载中。。。");
         HttpUtils.queryOrderPage(this, QueryOrderResult.class);
     }
 
     @Override
     public void onSuccess(QueryOrderResult data) {
         DialogUtils.dissLoad();
+        smartRefreshLayout.finishRefresh();
         mDatas.clear();
         mDatas.addAll(data.getData());
         mAdapter.notifyDataSetChanged();
@@ -74,10 +101,17 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     public void onFailure(MyException e) {
         DialogUtils.dissLoad();
         Toast.makeText(this, "查询订单失败", Toast.LENGTH_SHORT).show();
+        smartRefreshLayout.finishRefresh();
     }
 
-    private class OrderListAdapter extends BaseAdapter {
-        private SimpleDateFormat sdf=new SimpleDateFormat("mm-dd HH:mm:ss");
+    @OnClick(R.id.iv_back)
+    public void onViewClicked() {
+        finish();
+    }
+
+    class OrderListAdapter extends BaseAdapter {
+        private SimpleDateFormat sdf = new SimpleDateFormat("mm-dd HH:mm:ss");
+
         @Override
         public int getCount() {
             return mDatas.size();
@@ -95,17 +129,17 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            ViewHolder holder=null;
+            ViewHolder holder = null;
             if (view == null) {
                 view = LayoutInflater.from(OrderListActivity.this).inflate(R.layout.list_item_order, null);
-                holder=new ViewHolder(view);
+                holder = new ViewHolder(view);
                 view.setTag(holder);
             } else {
-                holder=(ViewHolder) view.getTag();
+                holder = (ViewHolder) view.getTag();
             }
-            holder.tvCount.setText(mDatas.get(i).getItems().size()+"");
+            holder.tvCount.setText(mDatas.get(i).getItems().size() + "");
             holder.tvDate.setText(sdf.format(mDatas.get(i).getCreate_time()));
-            holder.tvOrderNo.setText(mDatas.get(i).getOrder_id()+"");
+            holder.tvOrderNo.setText(mDatas.get(i).getOrder_id() + "");
             holder.userName.setText(mDatas.get(i).getAddr().getName());
             return view;
         }
