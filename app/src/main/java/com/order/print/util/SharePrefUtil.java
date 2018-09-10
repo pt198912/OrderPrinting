@@ -51,4 +51,5 @@ public class SharePrefUtil {
     public void setLong(String key,long s){
         mSp.edit().putFloat(key,s).commit();
     }
+
 }

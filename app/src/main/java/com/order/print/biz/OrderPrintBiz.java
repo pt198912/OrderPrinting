@@ -111,10 +111,12 @@ public class OrderPrintBiz {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mGpService = null;
+            Log.d(TAG, "onServiceDisconnected: ");
         }
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "onServiceConnected: ");
             mGpService = GpService.Stub.asInterface(service);
             BluetoothBiz.getInstance().setGpService(mGpService);
         }

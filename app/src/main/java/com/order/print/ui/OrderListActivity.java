@@ -1,5 +1,6 @@
 package com.order.print.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -15,6 +16,7 @@ import com.order.print.App;
 import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.bean.QueryOrderResult;
+import com.order.print.biz.BluetoothInfoManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponseCallback;
 import com.order.print.util.DialogUtils;
@@ -59,10 +61,18 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
 
     private void initView() {
         tvTitle.setText("订单列表");
-        if(App.getInstance().getConnectedDevice()!=null){
-            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),App.getInstance().getConnectedDevice().getAddress()));
+        if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null){
+            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress()));
         }else{
             tvConnState.setText(getResources().getString(R.string.label_no_conn));
+            tvConnState.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
+                    startActivity(blue);
+                    finish();
+                }
+            });
         }
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
@@ -74,7 +84,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
 
             @Override
             public void onRefresh(RefreshLayout refreshLayout) {
-
+                getOrderList();
             }
         });
     }

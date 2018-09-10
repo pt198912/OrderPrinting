@@ -167,58 +167,6 @@ public class MainActivity extends AppCompatActivity  {
         builder.create().show();
     }
 
-    private void showBluetoothPop(final List<BluetoothBean> bluetoothList) {
-
-        View view = LayoutInflater.from(this).inflate(R.layout.layout_bluetooth, null);
-        ListView mListView = view.findViewById(R.id.lv_bluetooth);
-//        MyBluetoothAdapter myBluetoothAdapter = new MyBluetoothAdapter();
-//        mListView.setAdapter(myBluetoothAdapter);
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                if (0 != mBluetoothList.size()) {
-                    closePopupWindow();
-                    pdConnect = ProgressDialog.show(MainActivity.this, "", "开始连接", true, true);
-                    pdConnect.setCanceledOnTouchOutside(false);
-                    pdConnect.show();
-                    BluetoothBiz.getInstance().connect(bluetoothList.get(position).mBluetoothAddress, bluetoothList.get(position).mBluetoothDevice);
-                }
-            }
-        });
-        pw = new PopupWindow(view, (int) (getScreenWidth(this) * 0.8), -2);
-        closePopupWindow();
-        pw.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        pw.setOutsideTouchable(true);
-        pw.setFocusable(true);
-        WindowManager.LayoutParams lp = getWindow().getAttributes();
-        lp.alpha = 0.7f;
-        getWindow().setAttributes(lp);
-        pw.setOnDismissListener(new PopupWindow.OnDismissListener() {
-
-            @Override
-            public void onDismiss() {
-                WindowManager.LayoutParams lp = getWindow().getAttributes();
-                lp.alpha = 1f;
-                getWindow().setAttributes(lp);
-            }
-        });
-        pw.setAnimationStyle(R.style.PopAnim);
-        //显示
-        pw.showAtLocation(view, Gravity.CENTER, 0, 0);
-    }
-
-    private void closePopupWindow() {
-        if (pw != null && pw.isShowing()) {
-            pw.dismiss();
-            pw = null;
-        }
-    }
-
-    public int getScreenWidth(Activity act) {
-        DisplayMetrics dm = new DisplayMetrics();
-        act.getWindowManager().getDefaultDisplay().getMetrics(dm);
-        return dm.widthPixels;
-    }
 
 
     @OnClick({R.id.tv_search_bluetooth, R.id.tv_setting, R.id.tv_order_list})

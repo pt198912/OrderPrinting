@@ -23,15 +23,15 @@ public class App extends Application {
     public static App getInstance() {
         return sInstance;
     }
-    private BluetoothDevice mConnectedDevice;
-
-    public void setConnectedDevice(BluetoothDevice connectedDevice) {
-        this.mConnectedDevice = connectedDevice;
-    }
-
-    public BluetoothDevice getConnectedDevice() {
-        return mConnectedDevice;
-    }
+//    private BluetoothDevice mConnectedDevice;
+//
+//    public void setConnectedDevice(BluetoothDevice connectedDevice) {
+//        this.mConnectedDevice = connectedDevice;
+//    }
+//
+//    public BluetoothDevice getConnectedDevice() {
+//        return mConnectedDevice;
+//    }
 
     @Override
     public void onCreate() {

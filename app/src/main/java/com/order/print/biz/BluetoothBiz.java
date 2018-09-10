@@ -25,7 +25,9 @@ import com.order.print.App;
 
 import com.order.print.IBluetoothService;
 import com.order.print.bean.BluetoothBean;
+import com.order.print.util.Constants;
 import com.order.print.util.IntentUtils;
+import com.order.print.util.SharePrefUtil;
 
 
 import java.io.OutputStream;
@@ -85,9 +87,7 @@ public class BluetoothBiz {
         return SingletonInstance.INSTANCE;
     }
     public void searchBlueToothDevice(Context context) {
-        Log.i(TAG, "searchBlueToothDevice(MainActivity.java:112)--->> " + "searchBlueToothDevice");
-
-
+        Log.i(TAG, "searchBlueToothDevice");
         mBluetoothList = new ArrayList<>();
         // 检查设备是否支持蓝牙
         adapter = BluetoothAdapter.getDefaultAdapter();
@@ -138,6 +138,13 @@ public class BluetoothBiz {
         }
     }
 
+    public void unregisterRecevier(Context context){
+        if(mRegistered) {
+            mRegistered=false;
+            context.unregisterReceiver(receiver);
+        }
+    }
+
     public class MyBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -161,8 +168,7 @@ public class BluetoothBiz {
                 if(mListener!=null){
                     mListener.onDiscoveryFound(bluetoothBean);
                 }
-                Log.i(TAG, "onReceive(MainActivity.java:184)--->> " + device.getName());
-                Log.i(TAG, "onReceive(MainActivity.java:185)--->> " + mBluetoothList.size());
+                Log.i(TAG, "ACTION_FOUND " + device.getName());
 
 //                if (device.getName().startsWith("Printer_29D0")) {
 //                    //取消搜索
@@ -190,7 +196,7 @@ public class BluetoothBiz {
 //                    }
 //                }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.i(TAG, "onReceive(MainActivity.java:213)--->> " + "搜索完成");
+                Log.i(TAG, "搜索完成");
 
                 if (0 == mBluetoothList.size())
                     Toast.makeText(App.getInstance(), "搜索不到蓝牙设备", Toast.LENGTH_SHORT).show();
@@ -236,7 +242,7 @@ public class BluetoothBiz {
     /**
      * 启动连接蓝牙的线程方法
      */
-    public synchronized void connect(String macAddress, BluetoothDevice device) {
+    public synchronized void connect(BluetoothDevice device) {
         if (mThread != null) {
             mThread.interrupt();
             mThread = null;
@@ -249,7 +255,7 @@ public class BluetoothBiz {
             }
             socket = null;
         }
-        mThread = new ConnectThread(macAddress, device);
+        mThread = new ConnectThread(device);
         mThread.start();
     }
 
@@ -262,6 +268,7 @@ public class BluetoothBiz {
             }
             socket = null;
         }
+        BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
     }
 
     private class ConnectThread extends Thread {
@@ -270,7 +277,7 @@ public class BluetoothBiz {
         //这条是蓝牙串口通用的UUID，不要更改
         private UUID myUuid =
                 UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-        public ConnectThread(String mac, BluetoothDevice device) {
+        public ConnectThread( BluetoothDevice device) {
             mmDevice = device;
 
             try {
@@ -285,9 +292,11 @@ public class BluetoothBiz {
         public void run() {
             adapter.cancelDiscovery();
             try {
-                Log.i(TAG, "run(MainActivity.java:367)--->> " + "连接socket");
+                Log.i(TAG,  "连接socket");
                 if (socket.isConnected()) {
-                    Log.i(TAG, "run(MainActivity.java:369)--->> " + "已经连接过了");
+                    Log.i(TAG, "已经连接过了");
+                    SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
+                    BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
                     if(mListener!=null) {
                         mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_CONNECTED);
                     }
@@ -301,6 +310,8 @@ public class BluetoothBiz {
                                 }
                                 switch (state) {
                                     case GpDevice.STATE_CONNECTED:
+                                        BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
+                                        SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
                                         break;
                                     case GpDevice.STATE_LISTEN:
                                         Log.i(TAG,  "state:STATE_LISTEN");
