@@ -237,7 +237,8 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
         BluetoothBiz.getInstance().unregisterRecevier(this);
     }
 
-    class MyBluetoothAdapter extends BaseAdapter {
+    class
+    MyBluetoothAdapter extends BaseAdapter {
 
         @Override
         public int getCount() {
@@ -269,6 +270,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             holder.tv_conn_state = convertView.findViewById(R.id.tv_conn_state);
             holder.item_text.setText(mBluetoothList.get(position).mBluetoothName);
             holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
+            holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
 //            if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
 //                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
 //                holder.tv_conn_state.setText("已连接");

@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 
 import com.order.print.R;
+import com.order.print.biz.BluetoothInfoManager;
 
 import am.example.printer.adapters.DeviceAdapter;
 import am.example.printer.data.TestPrintDataMaker;
@@ -123,6 +124,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
         }
 
         private void print() {
+            mDevice= BluetoothInfoManager.getInstance().getConnectedBluetooth();
             if (mDevice == null)
                 return;
             if (executor == null) {
