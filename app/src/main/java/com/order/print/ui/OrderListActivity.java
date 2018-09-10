@@ -1,5 +1,7 @@
 package com.order.print.ui;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,6 +31,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import am.example.printer.dialogs.BluetoothTestDialogFragment;
+import am.util.printer.PrinterWriter;
+import am.util.printer.PrinterWriter80mm;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -44,10 +49,15 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     ListView lvOrderList;
     @BindView(R.id.smart_layout)
     SmartRefreshLayout smartRefreshLayout;
+    @BindView(R.id.tv_right)
+    TextView rightTv;
     List<Order> mDatas = new ArrayList<>();
     OrderListAdapter mAdapter;
     @BindView(R.id.tv_conn_state)
     TextView tvConnState;
+
+    private int type = PrinterWriter80mm.TYPE_80;
+    private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,6 +71,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
 
     private void initView() {
         tvTitle.setText("订单列表");
+        rightTv.setText("打印");
         if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null){
             tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress()));
         }else{
@@ -114,10 +125,48 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         smartRefreshLayout.finishRefresh();
     }
 
-    @OnClick(R.id.iv_back)
-    public void onViewClicked() {
-        finish();
+    @OnClick({R.id.iv_back,R.id.tv_right})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.iv_back:
+                finish();
+                break;
+            case R.id.tv_right:
+                checkBluetooth();
+                break;
+        }
     }
+
+    public void checkBluetooth() {
+        if (BluetoothInfoManager.getInstance().getConnectedBluetooth() == null) {
+            Toast.makeText(App.getInstance(), "蓝牙未连接", Toast.LENGTH_SHORT).show();
+            Intent i=new Intent(App.getInstance(), BluetoothDeviceListActivity.class);
+            App.getInstance().startActivity(i);
+            return;
+        }
+        // 载入设备
+        showBluetoothTest();
+    }
+
+    private void showBluetoothTest() {
+        int width;
+        try {
+            width = 500;
+        } catch (Exception e) {
+            width = 500;
+        }
+        String strQRCode ="";
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("blue");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        BluetoothTestDialogFragment fragment = BluetoothTestDialogFragment
+                .getFragment(type, width, height, strQRCode);
+        fragment.show(ft, "blue");
+    }
+
 
     class OrderListAdapter extends BaseAdapter {
         private SimpleDateFormat sdf = new SimpleDateFormat("mm-dd HH:mm:ss");

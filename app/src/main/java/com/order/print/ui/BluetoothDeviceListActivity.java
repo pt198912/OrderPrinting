@@ -20,8 +20,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.bluetoothlib.BlueToothMode;
-import com.example.bluetoothlib.BluetoothConnectionCreator;
 import com.gprinter.io.GpDevice;
 import com.order.print.App;
 import com.order.print.R;
@@ -99,19 +97,19 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                 mBluetoothList.add(bean);
             }
         }
-        String lastConnected=SharePrefUtil.getInstance().getString(Constants.SP_KEY_CONNECTED_BLUETOOTH);
-        BluetoothDevice lastConnDevice=null;
-        if(!TextUtils.isEmpty(lastConnected)){
-            for(BluetoothDevice device:blues){
-               if(device.getAddress().equals(lastConnected)){
-                   lastConnDevice=device;
-                   break;
-               }
-            }
-        }
-        if(lastConnDevice!=null) {
-            BluetoothBiz.getInstance().connect(lastConnDevice);
-        }
+//        String lastConnected=SharePrefUtil.getInstance().getString(Constants.SP_KEY_CONNECTED_BLUETOOTH);
+//        BluetoothDevice lastConnDevice=null;
+//        if(!TextUtils.isEmpty(lastConnected)){
+//            for(BluetoothDevice device:blues){
+//               if(device.getAddress().equals(lastConnected)){
+//                   lastConnDevice=device;
+//                   break;
+//               }
+//            }
+//        }
+//        if(lastConnDevice!=null) {
+//            BluetoothBiz.getInstance().connect(lastConnDevice);
+//        }
     }
 
     private void initView() {
@@ -137,11 +135,13 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                     }).show();
                 }else{
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
-                    pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
-                    pdConnect.setCanceledOnTouchOutside(false);
-                    pdConnect.show();
-                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
-
+//                    pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
+////                    pdConnect.setCanceledOnTouchOutside(false);
+////                    pdConnect.show();
+//                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
+                    BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
+                    BluetoothInfoManager.getInstance().setConnectedBluetooth(mBluetoothList.get(position).mBluetoothDevice);
+                    mAdapter.notifyDataSetChanged();
                 }
             }
         });
@@ -269,12 +269,12 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             holder.tv_conn_state = convertView.findViewById(R.id.tv_conn_state);
             holder.item_text.setText(mBluetoothList.get(position).mBluetoothName);
             holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
-            if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
-                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
-                holder.tv_conn_state.setText("已连接");
-            }else {
-                holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
-            }
+//            if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
+//                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
+//                holder.tv_conn_state.setText("已连接");
+//            }else {
+//                holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
+//            }
             return convertView;
         }
 

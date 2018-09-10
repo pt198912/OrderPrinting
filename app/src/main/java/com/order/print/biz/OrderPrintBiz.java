@@ -1,6 +1,8 @@
 package com.order.print.biz;
 
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +20,7 @@ import com.gprinter.command.GpUtils;
 import com.gprinter.command.LabelCommand;
 //import com.gprinter.aidl.GpService;
 import com.order.print.App;
+import com.order.print.ui.BluetoothDeviceListActivity;
 import com.order.print.util.IntentUtils;
 
 import java.util.Vector;
@@ -91,8 +94,11 @@ public class OrderPrintBiz {
         }
     }
     public void init(){
-        bindService();
+//        bindService();
     }
+
+
+
     private void startService() {
         IntentUtils.startService(App.getInstance(),GpService.class);
 
@@ -106,6 +112,9 @@ public class OrderPrintBiz {
         intent.setPackage(App.getInstance().getPackageName());
         App.getInstance().bindService(intent, conn, Context.BIND_AUTO_CREATE);
     }
+
+
+
 
     private class PrinterServiceConnection implements ServiceConnection {
         @Override

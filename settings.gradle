@@ -1,1 +1,1 @@
-include ':app', ':LibMarsdaemon',':bluetoothlib'
+include ':app', ':LibMarsdaemon'
