@@ -19,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gprinter.io.GpDevice;
 import com.order.print.App;
@@ -121,24 +122,29 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             public void onItemClick(AdapterView<?> adapterView, View view,final  int position, long l) {
                 BluetoothDevice device=mBluetoothList.get(position).mBluetoothDevice;
                 if(device.getBondState()==BluetoothDevice.BOND_BONDED){
-                    new AlertDialog.Builder(BluetoothDeviceListActivity.this).setMessage("确定解除配对吗？").setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-
-                        }
-                    }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                            pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "正在断开连接", true, true);
-                            pdConnect.setCanceledOnTouchOutside(false);
-                            pdConnect.show();
-                            BluetoothBiz.getInstance().removeBond(mBluetoothList.get(position).mBluetoothDevice);
-                            BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    }).show();
+//                    new AlertDialog.Builder(BluetoothDeviceListActivity.this).setMessage("确定解除配对吗？").setNegativeButton("取消", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialogInterface, int i) {
+//                            dialogInterface.dismiss();
+//
+//                        }
+//                    }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialogInterface, int i) {
+//                            dialogInterface.dismiss();
+//                            pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "正在断开连接", true, true);
+//                            pdConnect.setCanceledOnTouchOutside(false);
+//                            pdConnect.show();
+//                            BluetoothBiz.getInstance().removeBond(mBluetoothList.get(position).mBluetoothDevice);
+//                            BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
+//                            mAdapter.notifyDataSetChanged();
+//                        }
+//                    }).show();
+                    BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
+                    BluetoothInfoManager.getInstance().setConnectedBluetooth(device);
+                    mAdapter.notifyDataSetChanged();
+//                    finish();
+                    Toast.makeText(BluetoothDeviceListActivity.this, "已连接打印机", Toast.LENGTH_SHORT).show();
                 }else{
                     pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
                     pdConnect.setCanceledOnTouchOutside(false);
@@ -287,12 +293,12 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             holder.item_text.setText(mBluetoothList.get(position).mBluetoothName);
             holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
             holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
-//            if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
-//                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
-//                holder.tv_conn_state.setText("已连接");
-//            }else {
-//                holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
-//            }
+            if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
+                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
+                holder.tv_conn_state.setText("已连接");
+            }else {
+                holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
+            }
             return convertView;
         }
 

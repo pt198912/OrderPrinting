@@ -142,6 +142,12 @@ public class MainActivity extends AppCompatActivity  {
         builder.create().show();
     }
 
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+        moveTaskToBack(false);
+    }
+
     private void showErrorDialog() {
         pdSearch.dismiss();
         DialogInterface.OnClickListener mOnClickListener = new DialogInterface.OnClickListener() {

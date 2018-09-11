@@ -98,28 +98,27 @@ public class TestPrintDataMaker implements PrintDataMaker {
                 printer.setFontSize(0);
                 printer.print("订单号："+order.getOrder_id());
                 printer.printLineFeed();
-                printer.print("下单时间："+order.getCreate_time());
+                printer.print("下单时间："+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                                .format(new Date(order.getCreate_time())));
                 printer.printLineFeed();
                 printer.setAlignCenter();
-                printer.printLine();
-                printer.print("1号口袋");
-                printer.printLine();
-                printer.setAlignLeft();
+                printer.print("--------1号口袋--------");
                 printer.printLineFeed();
-
+                printer.setAlignLeft();
 //                printer.print("订单号：88888888888888888");
 //                printer.printLineFeed();
                 for(int j=0;j<order.getItems().size();j++){
                     OrderItem item=order.getItems().get(j);
-                    printer.print(item.getName()+"                  ");
+                    printer.print(item.getName()+"             ");
                     printer.print("X"+item.getNum()+"  "+item.getTotal_price());
                     printer.printLineFeed();
                 }
-                printer.setAlignCenter();
-                printer.printLine();
-                printer.print("其他");
-                printer.printLine();
-                printer.printLineFeed();
+                if(order.getCj_money()!=0||order.getFull_reduce_price()!=0
+                        ||order.getLogistics()!=0) {
+                    printer.setAlignCenter();
+                    printer.print("--------其他--------");
+                    printer.printLineFeed();
+                }
                 printer.setAlignLeft();
                 if(order.getCj_money()!=0){
                     printer.print("餐盒            "+order.getCj_money());
@@ -133,17 +132,27 @@ public class TestPrintDataMaker implements PrintDataMaker {
                     printer.print("配送费              "+order.getLogistics());
                     printer.printLineFeed();
                 }
+                printer.setAlignLeft();
+                printer.setEmphasizedOff();
+                printer.setFontSize(0);
                 printer.printLine();
+                printer.printLineFeed();
                 printer.setAlignRight();
                 printer.setEmphasizedOn();
-                printer.setFontSize(1);
+                printer.setFontSize(7);
                 printer.print("已付：" +order.getNeed_pay());
                 printer.printLineFeed();
                 printer.setAlignLeft();
+                printer.setEmphasizedOff();
+                printer.setFontSize(0);
                 printer.printLine();
+                printer.printLineFeed();
 //                printer.print("已付：" +
 //                        new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
 //                                .format(new Date(System.currentTimeMillis())));
+                printer.setAlignLeft();
+                printer.setEmphasizedOn();
+                printer.setFontSize(1);
                 printer.print(order.getAddr().getAddr());
                 printer.printLineFeed();
                 printer.printLineFeed();
@@ -215,6 +224,9 @@ public class TestPrintDataMaker implements PrintDataMaker {
             }
             printer.setAlignCenter();
             printer.print("--------完--------");
+            printer.printLineFeed();
+            printer.printLineFeed();
+            printer.printLineFeed();
             printer.printLineFeed();
             data.add(printer.getDataAndClose());
             return data;

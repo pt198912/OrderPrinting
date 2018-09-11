@@ -72,19 +72,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     private void initView() {
         tvTitle.setText("订单列表");
         rightTv.setText("打印");
-        if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null){
-            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress()));
-        }else{
-            tvConnState.setText(getResources().getString(R.string.label_no_conn));
-            tvConnState.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
-                    startActivity(blue);
-                    finish();
-                }
-            });
-        }
+
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
         smartRefreshLayout.setOnRefreshListener(new OnRefreshLoadMoreListener() {
@@ -98,6 +86,24 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 getOrderList();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null){
+            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress()));
+        }else{
+            tvConnState.setText(getResources().getString(R.string.label_no_conn));
+            tvConnState.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
+                    startActivity(blue);
+                    finish();
+                }
+            });
+        }
     }
 
     private void getOrderList() {
@@ -141,6 +147,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         if (BluetoothInfoManager.getInstance().getConnectedBluetooth() == null) {
             Toast.makeText(App.getInstance(), "蓝牙未连接", Toast.LENGTH_SHORT).show();
             Intent i=new Intent(App.getInstance(), BluetoothDeviceListActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             App.getInstance().startActivity(i);
             return;
         }
@@ -163,7 +170,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         }
         ft.addToBackStack(null);
         BluetoothTestDialogFragment fragment = BluetoothTestDialogFragment
-                .getFragment(type, width, height, strQRCode);
+                .getFragment(type, width, height, strQRCode,(ArrayList<Order>) mDatas);
         fragment.show(ft, "blue");
     }
 

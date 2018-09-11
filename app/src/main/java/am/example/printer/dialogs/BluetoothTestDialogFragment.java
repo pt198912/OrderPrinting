@@ -16,7 +16,11 @@ import android.widget.TextView;
 
 
 import com.order.print.R;
+import com.order.print.bean.Order;
 import com.order.print.biz.BluetoothInfoManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import am.example.printer.adapters.DeviceAdapter;
 import am.example.printer.data.TestPrintDataMaker;
@@ -37,6 +41,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
     private static final String EXTRA_WIDTH = "width";
     private static final String EXTRA_HEIGHT = "height";
     private static final String EXTRA_QR = "qr";
+    private static final String EXTRA_ORDERS = "orders";
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private IPTestDialog dialog;
 
@@ -46,7 +51,8 @@ public class BluetoothTestDialogFragment extends DialogFragment {
         int width = getArguments().getInt(EXTRA_WIDTH, 500);
         int height = getArguments().getInt(EXTRA_HEIGHT, PrinterWriter.HEIGHT_PARTING_DEFAULT);
         String qr = getArguments().getString(EXTRA_QR);
-        dialog = new IPTestDialog(getActivity(), type, width, height, qr);
+        ArrayList<Order> orders = (ArrayList<Order>) getArguments().getSerializable(EXTRA_ORDERS);
+        dialog = new IPTestDialog(getActivity(), type, width, height, qr,orders);
         return dialog;
     }
 
@@ -78,7 +84,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
         private TestPrintDataMaker maker;
 
         @SuppressWarnings("all")
-        IPTestDialog(Context context, int type, int width, int height, String qr) {
+        IPTestDialog(Context context, int type, int width, int height, String qr,List<Order> orders) {
             super(context);
             this.type = type;
             setContentView(R.layout.dlg_printer_bluetooth);
@@ -93,7 +99,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
             btnPrint = (Button) findViewById(R.id.printer_btn_test_print);
             btnPrint.setOnClickListener(this);
             setEditable(true);
-            maker = new TestPrintDataMaker(context, qr, width, height);
+            maker = new TestPrintDataMaker(context, qr, width, height,orders);
         }
 
         void updateAdapter() {
@@ -211,6 +217,17 @@ public class BluetoothTestDialogFragment extends DialogFragment {
         bundle.putInt(EXTRA_WIDTH, width);
         bundle.putInt(EXTRA_HEIGHT, height);
         bundle.putString(EXTRA_QR, qr);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+    public static BluetoothTestDialogFragment getFragment(int type, int width, int height, String qr,ArrayList<Order> orders) {
+        BluetoothTestDialogFragment fragment = new BluetoothTestDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(EXTRA_TYPE, type);
+        bundle.putInt(EXTRA_WIDTH, width);
+        bundle.putInt(EXTRA_HEIGHT, height);
+        bundle.putString(EXTRA_QR, qr);
+        bundle.putSerializable(EXTRA_ORDERS,orders);
         fragment.setArguments(bundle);
         return fragment;
     }

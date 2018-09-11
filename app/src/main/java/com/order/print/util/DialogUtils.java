@@ -17,8 +17,10 @@ public class DialogUtils {
         if(null==loading){
             loading = new WeakReference<>(new CenterLoadingView(context));
         }
-        loading.get().setTitle(title);
-        loading.get().show();
+        if(loading.get()!=null) {
+            loading.get().setTitle(title);
+            loading.get().show();
+        }
     }
     public static void dissLoad()  {
         if(loading!=null&&loading.get()!=null){

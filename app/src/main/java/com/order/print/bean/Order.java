@@ -1,12 +1,13 @@
 package com.order.print.bean;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by pt198 on 05/09/2018.
  */
 
-public class Order {
+public class Order implements Serializable{
 //     "order_id": 841,                 订单编号
 //        "shop_id": 265,
 //                "logistics": 0.01,              配送费

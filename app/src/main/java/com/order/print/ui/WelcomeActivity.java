@@ -55,5 +55,6 @@ public class WelcomeActivity extends BaseActivity implements MyResponseCallback<
     @Override
     public void onFailure(MyException e) {
         Toast.makeText(this, "登录失败，"+e.getMsg(), Toast.LENGTH_SHORT).show();
+        IntentUtils.startActivity(this,LoginActivity.class);
     }
 }
