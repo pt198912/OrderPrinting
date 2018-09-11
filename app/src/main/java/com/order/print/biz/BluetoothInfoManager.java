@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 
 public class BluetoothInfoManager {
     private BluetoothDevice mConnectedBluetooth;
+    private int mState=BluetoothDevice.BOND_NONE;
     private static class SingletonInstance{
         private static final BluetoothInfoManager INSTANCE=new BluetoothInfoManager();
     }
@@ -24,5 +25,13 @@ public class BluetoothInfoManager {
 
     public BluetoothDevice getConnectedBluetooth() {
         return mConnectedBluetooth;
+    }
+
+    public void setConnectionState(int state){
+        this.mState=state;
+    }
+
+    public int getConnectionState() {
+        return mState;
     }
 }

@@ -89,13 +89,13 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
     private void getBoundedDevices(){
         Set<BluetoothDevice> blues=mBluetoothAdapter.getBondedDevices();
         for(BluetoothDevice device:blues){
-            if(device.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
+//            if(device.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
                 BluetoothBean bean = new BluetoothBean();
                 bean.mBluetoothDevice = device;
                 bean.mBluetoothAddress = device.getAddress();
                 bean.mBluetoothName = device.getName();
                 mBluetoothList.add(bean);
-            }
+//            }
         }
 //        String lastConnected=SharePrefUtil.getInstance().getString(Constants.SP_KEY_CONNECTED_BLUETOOTH);
 //        BluetoothDevice lastConnDevice=null;
@@ -118,30 +118,35 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
         lvBluetoothList.setAdapter(mAdapter);
         lvBluetoothList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view,final  int position, long l) {
                 BluetoothDevice device=mBluetoothList.get(position).mBluetoothDevice;
-                if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null&&device.getAddress().equals(BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress())){
-                    new AlertDialog.Builder(BluetoothDeviceListActivity.this).setMessage("确定断开蓝牙吗？").setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                if(device.getBondState()==BluetoothDevice.BOND_BONDED){
+                    new AlertDialog.Builder(BluetoothDeviceListActivity.this).setMessage("确定解除配对吗？").setNegativeButton("取消", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();
-                            disconnectBluetooth();
+
                         }
                     }).setPositiveButton("确认", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();
+                            pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "正在断开连接", true, true);
+                            pdConnect.setCanceledOnTouchOutside(false);
+                            pdConnect.show();
+                            BluetoothBiz.getInstance().removeBond(mBluetoothList.get(position).mBluetoothDevice);
+                            BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
+                            mAdapter.notifyDataSetChanged();
                         }
                     }).show();
                 }else{
-                    BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
-//                    pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
-////                    pdConnect.setCanceledOnTouchOutside(false);
-////                    pdConnect.show();
+                    pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
+                    pdConnect.setCanceledOnTouchOutside(false);
+                    pdConnect.show();
 //                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(mBluetoothList.get(position).mBluetoothDevice);
-                    mAdapter.notifyDataSetChanged();
+
                 }
             }
         });
@@ -161,7 +166,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
     @Override
     public void onDiscoveryFound(BluetoothBean data) {
         Log.d(TAG, "onDiscoveryFound: getBluetoothClass().getDeviceClass "+data.mBluetoothDevice.getBluetoothClass().getDeviceClass());
-        if(data.mBluetoothDevice.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
+//        if(data.mBluetoothDevice.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
             boolean exist = false;
             for (int i = 0; i < mBluetoothList.size(); i++) {
                 if (data.mBluetoothAddress.equals(mBluetoothList.get(i).mBluetoothAddress)) {
@@ -173,7 +178,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                 mBluetoothList.add(data);
                 mAdapter.notifyDataSetChanged();
             }
-        }
+//        }
     }
 
     @Override
@@ -221,6 +226,17 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                 }
             }
         });
+    }
+
+    @Override
+    public void onConnectionChanged(int state) {
+        pdConnect.dismiss();
+        mAdapter.notifyDataSetChanged();
+        if(state==BluetoothDevice.BOND_BONDED){
+            Log.d(TAG, "onConnectionChanged: BOND_BONDED");
+        }else if(state==BluetoothDevice.BOND_NONE){
+            Log.d(TAG, "onConnectionChanged: BOND_NONE");
+        }
     }
 
     @OnClick(R.id.iv_back)
@@ -293,6 +309,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                     a = "未连接";
                     break;
             }
+            Log.d(TAG, "bltStatus: "+a);
             return a;
         }
 

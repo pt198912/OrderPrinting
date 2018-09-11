@@ -37,6 +37,8 @@ import java.util.HashSet;
 
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
+import static android.bluetooth.BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 
@@ -130,6 +132,7 @@ public class BluetoothBiz {
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
                 intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+                intentFilter.addAction(ACTION_BOND_STATE_CHANGED);
                 // 注册广播接收器，接收并处理搜索结果
                 receiver = new MyBroadcastReceiver();
                 context.registerReceiver(receiver, intentFilter);
@@ -216,7 +219,20 @@ public class BluetoothBiz {
 
                 }
 
+            }  else if(ACTION_BOND_STATE_CHANGED.equals(intent.getAction()))
+            {
+                Log.v(TAG, "### BT ACTION_BOND_STATE_CHANGED ##");
+
+                int cur_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE);
+                int previous_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.BOND_NONE);
+                BluetoothInfoManager.getInstance().setConnectionState(cur_bond_state);
+
+                if(mListener!=null){
+                    mListener.onConnectionChanged(cur_bond_state);
+                }
+                Log.v(TAG, "### cur_bond_state ##" + cur_bond_state + " ~~ previous_bond_state" + previous_bond_state);
             }
+
         }
     }
     private OnBluetoothStateListener mListener;
@@ -224,19 +240,34 @@ public class BluetoothBiz {
         void onDiscoveryFinish(ArrayList<BluetoothBean> datas);
         void onDiscoveryFound(BluetoothBean data);
         void onPrintDeviceConnStatusChanged(BluetoothDevice device,int status);
-
+        void onConnectionChanged(int state);
     }
 
     public void setListener(OnBluetoothStateListener listener) {
         this.mListener = listener;
     }
-    public synchronized void bond(BluetoothDevice device){
+    public synchronized boolean bond(BluetoothDevice device){
         // 配对
         try {
             Method createBondMethod = BluetoothDevice.class.getMethod("createBond");
-            createBondMethod.invoke(device);
+            return (Boolean)createBondMethod.invoke(device);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+    /**
+     * 与设备解除配对 参考源码：platform/packages/apps/Settings.git
+     * /Settings/src/com/android/settings/bluetooth/CachedBluetoothDevice.java
+     */
+    public synchronized boolean removeBond(BluetoothDevice btDevice) {
+        try {
+            Method removeBondMethod = BluetoothDevice.class.getMethod("removeBond");
+            Boolean returnValue = (Boolean) removeBondMethod.invoke(btDevice);
+            return returnValue.booleanValue();
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
         }
     }
     /**
