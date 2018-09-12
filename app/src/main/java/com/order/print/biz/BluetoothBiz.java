@@ -222,11 +222,9 @@ public class BluetoothBiz {
             }  else if(ACTION_BOND_STATE_CHANGED.equals(intent.getAction()))
             {
                 Log.v(TAG, "### BT ACTION_BOND_STATE_CHANGED ##");
-
                 int cur_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE);
                 int previous_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.BOND_NONE);
                 BluetoothInfoManager.getInstance().setConnectionState(cur_bond_state);
-
                 if(mListener!=null){
                     mListener.onConnectionChanged(cur_bond_state);
                 }

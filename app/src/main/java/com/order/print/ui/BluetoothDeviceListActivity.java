@@ -294,7 +294,8 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
             holder.item_text_address.setText(mBluetoothList.get(position).mBluetoothAddress);
             holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
             if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
-                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())){
+                    &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress().equals(mBluetoothList.get(position).mBluetoothDevice.getAddress())
+                    &&mBluetoothList.get(position).mBluetoothDevice.getBondState()==BluetoothDevice.BOND_BONDED){
                 holder.tv_conn_state.setText("已连接");
             }else {
                 holder.tv_conn_state.setText(bltStatus(mBluetoothList.get(position).mBluetoothDevice.getBondState()));
