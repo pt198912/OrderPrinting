@@ -37,6 +37,7 @@ import java.util.HashSet;
 
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
 import static android.bluetooth.BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -97,6 +98,18 @@ public class BluetoothBiz {
             Toast.makeText(App.getInstance(), "当前设备不支持蓝牙", Toast.LENGTH_SHORT).show();
             return;
         }
+        if(!mRegistered) {
+            // 设置广播信息过滤
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+            intentFilter.addAction(ACTION_STATE_CHANGED);
+            intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            intentFilter.addAction(ACTION_BOND_STATE_CHANGED);
+            // 注册广播接收器，接收并处理搜索结果
+            receiver = new MyBroadcastReceiver();
+            context.registerReceiver(receiver, intentFilter);
+            mRegistered=true;
+        }
         // 如果蓝牙已经关闭就打开蓝牙
         if (!adapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -127,17 +140,7 @@ public class BluetoothBiz {
             }
             //开始搜索
             adapter.startDiscovery();
-            if(!mRegistered) {
-                // 设置广播信息过滤
-                IntentFilter intentFilter = new IntentFilter();
-                intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-                intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                intentFilter.addAction(ACTION_BOND_STATE_CHANGED);
-                // 注册广播接收器，接收并处理搜索结果
-                receiver = new MyBroadcastReceiver();
-                context.registerReceiver(receiver, intentFilter);
-                mRegistered=true;
-            }
+
         }
     }
 
@@ -219,8 +222,7 @@ public class BluetoothBiz {
 
                 }
 
-            }  else if(ACTION_BOND_STATE_CHANGED.equals(intent.getAction()))
-            {
+            }  else if(ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
                 Log.v(TAG, "### BT ACTION_BOND_STATE_CHANGED ##");
                 int cur_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE);
                 int previous_bond_state = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.BOND_NONE);
@@ -229,6 +231,25 @@ public class BluetoothBiz {
                     mListener.onConnectionChanged(cur_bond_state);
                 }
                 Log.v(TAG, "### cur_bond_state ##" + cur_bond_state + " ~~ previous_bond_state" + previous_bond_state);
+            } else if(ACTION_STATE_CHANGED.equals(intent.getAction())){
+                int blueState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0);
+                Log.d(TAG, "onReceive: ACTION_STATE_CHANGED "+blueState);
+                switch(blueState){
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        //开始扫描
+                        if(adapter.isDiscovering()){
+                            adapter.cancelDiscovery();
+                        }
+                        //开始搜索
+                        adapter.startDiscovery();
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        break;
+                    case BluetoothAdapter.STATE_OFF:
+                        break;
+                }
             }
 
         }

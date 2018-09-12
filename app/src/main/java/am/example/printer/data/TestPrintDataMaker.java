@@ -48,15 +48,10 @@ public class TestPrintDataMaker implements PrintDataMaker {
         this.orders=orders;
     }
 
+    private static final int BIG_FONT=1;
+    private static final int NORMAL_FONT=0;
 
-    /**
-     * 获取横线线宽
-     *
-     * @return 横线线宽
-     */
-    protected int getLineWidth(){
-        return 50;
-    }
+
 
     @Override
     public List<byte[]> getPrintData(int type) {
@@ -64,7 +59,7 @@ public class TestPrintDataMaker implements PrintDataMaker {
 
         try {
             PrinterWriter printer;
-            printer = type == PrinterWriter58mm.TYPE_58 ? new PrinterWriter58mm(height, width) : new PrinterWriter80mm(height, width);
+            printer = new CustomPrintWriter(height,width);
             printer.setAlignCenter();
             data.add(printer.getDataAndReset());
             for(int i=0;i<orders.size();i++) {
@@ -81,42 +76,43 @@ public class TestPrintDataMaker implements PrintDataMaker {
 //            printer.printLineFeed();
                 printer.setAlignCenter();
                 printer.setEmphasizedOn();
-                printer.setFontSize(1);
+                printer.setFontSize(BIG_FONT);
                 printer.print("# "+(i+1)+"好食亿点");
                 printer.printLineFeed();
-                printer.setFontSize(0);
+                printer.setFontSize(NORMAL_FONT);
                 printer.setEmphasizedOff();
                 printer.printLineFeed();
                 printer.print(order.getShop_name());
 //                printer.print("最时尚的明星餐厅");
                 printer.printLineFeed();
                 printer.setEmphasizedOn();
-                printer.setFontSize(1);
-                printer.print("在线支付（已支付）");
+                printer.setFontSize(BIG_FONT);
+                printer.print("在线支付(已支付)");
                 printer.printLineFeed();
                 printer.setEmphasizedOff();
-                printer.setFontSize(0);
+                printer.setFontSize(NORMAL_FONT);
                 printer.print("订单号："+order.getOrder_id());
                 printer.printLineFeed();
                 printer.print("下单时间："+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                                 .format(new Date(order.getCreate_time())));
                 printer.printLineFeed();
                 printer.setAlignCenter();
-                printer.print("--------1号口袋--------");
+                printer.print("------------1号口袋------------");
+                printer.printLineFeed();
                 printer.printLineFeed();
                 printer.setAlignLeft();
 //                printer.print("订单号：88888888888888888");
 //                printer.printLineFeed();
                 for(int j=0;j<order.getItems().size();j++){
                     OrderItem item=order.getItems().get(j);
-                    printer.print(item.getName()+"             ");
+                    printer.print(item.getName()+"              ");
                     printer.print("X"+item.getNum()+"  "+item.getTotal_price());
                     printer.printLineFeed();
                 }
                 if(order.getCj_money()!=0||order.getFull_reduce_price()!=0
                         ||order.getLogistics()!=0) {
                     printer.setAlignCenter();
-                    printer.print("--------其他--------");
+                    printer.print("------------其他------------");
                     printer.printLineFeed();
                 }
                 printer.setAlignLeft();
@@ -133,26 +129,30 @@ public class TestPrintDataMaker implements PrintDataMaker {
                     printer.printLineFeed();
                 }
                 printer.setAlignLeft();
-                printer.setEmphasizedOff();
-                printer.setFontSize(0);
-                printer.printLine();
+//                printer.setEmphasizedOff();
+//                printer.setFontSize(0);
+//                printer.printLine();
+                printer.setFontSize(BIG_FONT);
+                printer.print("________________________________");
+                printer.printLineFeed();
                 printer.printLineFeed();
                 printer.setAlignRight();
                 printer.setEmphasizedOn();
-                printer.setFontSize(7);
+                printer.setFontSize(BIG_FONT);
                 printer.print("已付：" +order.getNeed_pay());
                 printer.printLineFeed();
                 printer.setAlignLeft();
                 printer.setEmphasizedOff();
-                printer.setFontSize(0);
-                printer.printLine();
+//                printer.setFontSize(NORMAL_FONT);
+//                printer.printLine();
+                printer.print("________________________________");
                 printer.printLineFeed();
 //                printer.print("已付：" +
 //                        new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault())
 //                                .format(new Date(System.currentTimeMillis())));
                 printer.setAlignLeft();
                 printer.setEmphasizedOn();
-                printer.setFontSize(1);
+                printer.setFontSize(BIG_FONT);
                 printer.print(order.getAddr().getAddr());
                 printer.printLineFeed();
                 printer.printLineFeed();
@@ -223,7 +223,7 @@ public class TestPrintDataMaker implements PrintDataMaker {
 //                data.add(printer.getDataAndClose());
             }
             printer.setAlignCenter();
-            printer.print("--------完--------");
+            printer.print("------完------");
             printer.printLineFeed();
             printer.printLineFeed();
             printer.printLineFeed();

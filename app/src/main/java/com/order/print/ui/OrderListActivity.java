@@ -29,10 +29,12 @@ import com.scwang.smartrefresh.layout.listener.OnRefreshLoadMoreListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import am.example.printer.dialogs.BluetoothTestDialogFragment;
 import am.util.printer.PrinterWriter;
+import am.util.printer.PrinterWriter58mm;
 import am.util.printer.PrinterWriter80mm;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,7 +58,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     @BindView(R.id.tv_conn_state)
     TextView tvConnState;
 
-    private int type = PrinterWriter80mm.TYPE_80;
+    private int type = PrinterWriter58mm.TYPE_58;
     private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
 
     @Override
@@ -204,7 +206,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 holder = (ViewHolder) view.getTag();
             }
             holder.tvCount.setText(mDatas.get(i).getItems().size() + "");
-            holder.tvDate.setText(sdf.format(mDatas.get(i).getCreate_time()));
+            holder.tvDate.setText(sdf.format(new Date(mDatas.get(i).getCreate_time())));
             holder.tvOrderNo.setText(mDatas.get(i).getOrder_id() + "");
             holder.userName.setText(mDatas.get(i).getAddr().getName());
             return view;
