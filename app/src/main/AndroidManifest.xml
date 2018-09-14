@@ -37,6 +37,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ui.WelcomeActivity"
+            android:excludeFromRecents="true"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,28 +47,174 @@
         </activity>
         <activity android:name=".ui.LoginActivity"
             android:screenOrientation="portrait"
+            android:excludeFromRecents="true"
            />
         <activity android:name=".ui.MainActivity"
             android:screenOrientation="portrait"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"/>
         <activity android:name=".ui.BluetoothDeviceListActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:excludeFromRecents="true"
             />
         <activity android:name=".ui.OrderListActivity"
             android:screenOrientation="portrait"
-
+            android:excludeFromRecents="true"
             />
         <activity android:name=".ui.SettingActivity"
             android:screenOrientation="portrait"
-
+            android:excludeFromRecents="true"
             />
         <service android:name=".service.OrderJobService" android:process=":process1"/>
         <receiver android:name=".receiver.Receiver1" android:process=":process1"/>
         <service android:name=".service.Service2" android:process=":process2"/>
         <receiver android:name=".receiver.Receiver2" android:process=":process2"/>
+        <service android:name=".service.OrderJobService" android:process=":process1"/>
 
-        <service android:name=".biz.BluetoothService" />
+
+
+        <activity android:name="com.jiangdg.keepappalive.SinglePixelActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|navigation|keyboard"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="false"
+            android:launchMode="singleInstance"
+            android:theme="@style/SingleActivityStyle"/>
+
+
+        <!--注册Service-->
+        <service android:name="com.jiangdg.keepappalive.service.DaemonService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":daemon_service"/>
+
+        <service android:name="com.jiangdg.keepappalive.service.CancelNoticeService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":service"/>
+        <service android:name="com.jiangdg.keepappalive.service.PlayerMusicService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":music_service"/>
+        <service
+            android:name="com.jiangdg.keepappalive.service.AliveJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+        <!--接收系统广播接收器-->
+        <receiver android:name="com.jiangdg.keepappalive.receiver.KeepAliveReceiver">
+            <!--设备重启广播-->
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!--安装或卸载广播-->
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <data android:scheme="package" />
+            </intent-filter>
+            <!--解锁广播-->
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_USER_PRESENT"/>
+            </intent-filter>
+            <!--存储卡挂载广播-->
+            <intent-filter >
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED"/>
+                <data android:scheme="file">
+                </data>
+            </intent-filter>
+            <!--网络状态广播-->
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            华为推送
+        -->
+        <!-- 第三方相关 :接收Push消息（注册、Push消息、Push连接状态、标签，LBS上报结果）广播 -->
+        <receiver android:name="com.jiangdg.keepappalive.receiver.MyHwPushReceiver" >
+            <intent-filter>
+                <!-- 必须,用于接收token-->
+                <action android:name="com.huawei.android.push.intent.REGISTRATION" />
+                <!-- 必须，用于接收消息-->
+                <action android:name="com.huawei.android.push.intent.RECEIVE" />
+                <!-- 可选，用于点击通知栏或通知栏上的按钮后触发onEvent回调-->
+                <action android:name="com.huawei.android.push.intent.CLICK" />
+                <!-- 可选，查看push通道是否连接，不查看则不需要-->
+                <action android:name="com.huawei.intent.action.PUSH_STATE" />
+                <!-- 可选，标签、地理位置上报回应，不上报则不需要 -->
+                <action android:name="com.huawei.android.push.plugin.RESPONSE" />
+            </intent-filter>
+            <meta-data android:name="CS_cloud_ablitity" android:value="@string/hwpush_ability_value"/>
+        </receiver>
+
+        <!-- 备注：Push相关的android组件需要添加到业务的AndroidManifest.xml,
+        	 Push相关android组件运行在另外一个进程是为了防止Push服务异常而影响主业务 -->
+
+        <!-- PushSDK:PushSDK接收外部请求事件入口 -->
+        <receiver
+            android:name="com.huawei.android.pushagent.PushEventReceiver"
+            android:process=":pushservice" >
+            <intent-filter>
+                <action android:name="com.huawei.android.push.intent.REFRESH_PUSH_CHANNEL" />
+                <action android:name="com.huawei.intent.action.PUSH" />
+                <action android:name="com.huawei.intent.action.PUSH_ON" />
+                <action android:name="com.huawei.android.push.PLUGIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.huawei.android.pushagent.PushBootReceiver"
+            android:process=":pushservice" >
+            <intent-filter>
+                <action android:name="com.huawei.android.push.intent.REGISTER" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+            <meta-data
+                android:name="CS_cloud_version"
+                android:value="\u0032\u0037\u0030\u0035" />
+        </receiver>
+
+        <!-- PushSDK:Push服务 -->
+        <service
+            android:name="com.huawei.android.pushagent.PushService"
+            android:process=":pushservice" >
+        </service>
+
+        <!-- PushSDK:富媒体呈现页面，用于呈现服务器下发的富媒体消息 -->
+        <!-- locale|layoutDirection 切换语言后不重新创建activity -->
+        <activity
+            android:name="com.huawei.android.pushselfshow.richpush.RichPushActivity"
+            android:process=":pushservice"
+            android:theme="@style/hwpush_NoActionBar"
+            android:configChanges="orientation|screenSize|locale|layoutDirection"
+            android:screenOrientation="portrait">
+            <meta-data android:name="hwc-theme"
+                android:value="androidhwext:style/Theme.Emui"/>
+            <intent-filter>
+                <action android:name="com.huawei.android.push.intent.RICHPUSH" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.huawei.android.pushselfshow.permission.RequestPermissionsActivity"
+            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog.NoActionBar"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|locale|layoutDirection"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

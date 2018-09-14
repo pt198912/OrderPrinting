@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import am.example.printer.dialogs.BluetoothTestDialogFragment;
 import am.util.printer.PrinterWriter;
@@ -176,9 +177,14 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         fragment.show(ft, "blue");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DialogUtils.dissLoad();
+    }
 
     class OrderListAdapter extends BaseAdapter {
-        private SimpleDateFormat sdf = new SimpleDateFormat("mm-dd HH:mm:ss");
+        private SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault());
 
         @Override
         public int getCount() {

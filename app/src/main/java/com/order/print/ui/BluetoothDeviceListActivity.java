@@ -50,9 +50,9 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
     MyBluetoothAdapter mAdapter;
     List<BluetoothBean> mBluetoothList = new ArrayList<>();
     ProgressDialog pdConnect;
-    private static final String TAG = "BluetoothDeviceListActi";
-
     BluetoothAdapter mBluetoothAdapter;
+    private static final String TAG = "BluetoothDeviceListActivity";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +88,10 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
     }
 
     private void getBoundedDevices(){
+        if(mBluetoothAdapter==null){
+            return;
+        }
+        mBluetoothList.clear();
         Set<BluetoothDevice> blues=mBluetoothAdapter.getBondedDevices();
         for(BluetoothDevice device:blues){
 //            if(device.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
@@ -169,6 +173,25 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
 //        mAdapter.notifyDataSetChanged();
     }
     public static final int PRINT_TYPE = 1664;
+
+    @Override
+    public void onDiscoveryFound(List<BluetoothBean> list) {
+        for(int j=0;j<list.size();j++) {
+            BluetoothBean data=list.get(j);
+            boolean exist = false;
+            for (int i = 0; i < mBluetoothList.size(); i++) {
+                if (data.mBluetoothAddress.equals(mBluetoothList.get(i).mBluetoothAddress)) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                mBluetoothList.add(data);
+            }
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onDiscoveryFound(BluetoothBean data) {
         Log.d(TAG, "onDiscoveryFound: getBluetoothClass().getDeviceClass "+data.mBluetoothDevice.getBluetoothClass().getDeviceClass());

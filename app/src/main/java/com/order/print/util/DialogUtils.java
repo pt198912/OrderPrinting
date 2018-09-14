@@ -25,6 +25,7 @@ public class DialogUtils {
     public static void dissLoad()  {
         if(loading!=null&&loading.get()!=null){
             loading.get().dismiss();
+            loading=null;
         }
     }
 

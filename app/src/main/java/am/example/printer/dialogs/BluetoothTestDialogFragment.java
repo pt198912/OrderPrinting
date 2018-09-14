@@ -15,12 +15,15 @@ import android.widget.Button;
 import android.widget.TextView;
 
 
+import com.order.print.App;
 import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.biz.BluetoothInfoManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import am.example.printer.adapters.DeviceAdapter;
 import am.example.printer.data.TestPrintDataMaker;
@@ -103,8 +106,13 @@ public class BluetoothTestDialogFragment extends DialogFragment {
         }
 
         void updateAdapter() {
-            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled())
-                bondedAdapter.setDevices(bluetoothAdapter.getBondedDevices());
+            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+                Set<BluetoothDevice> set=new HashSet<>();
+                if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null&&BluetoothInfoManager.getInstance().getConnectedBluetooth().getBondState()==BluetoothDevice.BOND_BONDED) {
+                    set.add(BluetoothInfoManager.getInstance().getConnectedBluetooth());
+                }
+                bondedAdapter.setDevices(set);
+            }
         }
 
         private void setEditable(boolean editable) {

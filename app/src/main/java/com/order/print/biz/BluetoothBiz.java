@@ -3,6 +3,7 @@ package com.order.print.biz;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -35,6 +36,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
@@ -242,6 +245,10 @@ public class BluetoothBiz {
                         if(adapter.isDiscovering()){
                             adapter.cancelDiscovery();
                         }
+                        getBoundedDevices();
+                        if(mListener!=null){
+                            mListener.onDiscoveryFound(mBluetoothList);
+                        }
                         //开始搜索
                         adapter.startDiscovery();
                         break;
@@ -254,10 +261,37 @@ public class BluetoothBiz {
 
         }
     }
+
+    private void getBoundedDevices(){
+        BluetoothManager bluetoothManager=(BluetoothManager) App.getInstance().getSystemService(Context.BLUETOOTH_SERVICE);
+        //获得蓝牙适配器。蓝牙适配器是我们操作蓝牙的主要对象，可以从中获得配对过的蓝牙集合，可以获得蓝牙传输对象等等
+
+        //获取BluetoothAdapter
+        BluetoothAdapter bluetoothAdapter=null;
+        if (bluetoothManager != null) {
+            bluetoothAdapter= bluetoothManager.getAdapter();
+        }
+        if(bluetoothAdapter==null){
+            return;
+        }
+        mBluetoothList.clear();
+        Set<BluetoothDevice> blues=bluetoothAdapter.getBondedDevices();
+        for(BluetoothDevice device:blues){
+//            if(device.getBluetoothClass().getDeviceClass()==PRINT_TYPE) {//如果该蓝牙设备是打印机设备
+            BluetoothBean bean = new BluetoothBean();
+            bean.mBluetoothDevice = device;
+            bean.mBluetoothAddress = device.getAddress();
+            bean.mBluetoothName = device.getName();
+            mBluetoothList.add(bean);
+//            }
+        }
+
+    }
     private OnBluetoothStateListener mListener;
     public interface OnBluetoothStateListener{
         void onDiscoveryFinish(ArrayList<BluetoothBean> datas);
         void onDiscoveryFound(BluetoothBean data);
+        void onDiscoveryFound(List<BluetoothBean> data);
         void onPrintDeviceConnStatusChanged(BluetoothDevice device,int status);
         void onConnectionChanged(int state);
     }

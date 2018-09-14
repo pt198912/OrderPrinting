@@ -15,6 +15,7 @@ import com.order.print.bean.LoginBean;
 import com.order.print.biz.UserInfoManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponseCallback;
+import com.order.print.util.DialogUtils;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
 
@@ -62,10 +63,17 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
 
     @Override
     public void onSuccess(LoginBean data) {
+        DialogUtils.dissLoad();
         UserInfoManager.getInstance().setName(name);
         UserInfoManager.getInstance().setPwd(pwd);
         UserInfoManager.getInstance().setToken(data.getToken());
         IntentUtils.startActivity(this,MainActivity.class);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DialogUtils.dissLoad();
     }
 
     @Override
@@ -75,6 +83,7 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
 
     @Override
     public void onFailure(MyException e) {
+        DialogUtils.dissLoad();
         Toast.makeText(this, "登录失败，"+e.getMsg(), Toast.LENGTH_SHORT).show();
     }
 
@@ -94,6 +103,7 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
             Toast.makeText(this, "密码不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
+        DialogUtils.loading(this,"");
         login(name,pwd);
     }
 }
