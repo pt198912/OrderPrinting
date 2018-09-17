@@ -14,7 +14,10 @@ import android.widget.Toast;
 import com.jiangdg.keepappalive.utils.Contants;
 import com.jiangdg.keepappalive.utils.SystemUtils;
 
+import com.order.print.biz.OrderPrintBiz;
+import com.order.print.service.PrintService;
 import com.order.print.ui.WelcomeActivity;
+import com.order.print.util.IntentUtils;
 
 /**JobService，支持5.0以上forcestop依然有效
  *
@@ -37,20 +40,26 @@ public class AliveJobService extends JobService {
         public boolean handleMessage(Message msg) {
             // 具体任务逻辑
             if(SystemUtils.isAPPALive(getApplicationContext(), Contants.PACKAGE_NAME)){
-                Toast.makeText(getApplicationContext(), "APP活着的", Toast.LENGTH_SHORT)
-                        .show();
+//                Toast.makeText(getApplicationContext(), "APP活着的", Toast.LENGTH_SHORT)
+//                        .show();
             }else{
                 Intent intent = new Intent(getApplicationContext(), WelcomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-                Toast.makeText(getApplicationContext(), "APP被杀死，重启...", Toast.LENGTH_SHORT)
-                        .show();
+//                Toast.makeText(getApplicationContext(), "APP被杀死，重启...", Toast.LENGTH_SHORT)
+//                        .show();
             }
             // 通知系统任务执行结束
             jobFinished( (JobParameters) msg.obj, false );
             return true;
         }
     });
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        OrderPrintBiz.getInstance().init();
+    }
 
     @Override
     public boolean onStartJob(JobParameters params) {

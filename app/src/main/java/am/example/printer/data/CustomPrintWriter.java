@@ -49,29 +49,33 @@ public class CustomPrintWriter extends PrinterWriter {
                 Log.d("pengtao", "fontSizeSetBig: 0");
                 break;
             case 1:
-                realSize = 6;
+                realSize = 8;
                 Log.d("pengtao", "fontSizeSetBig: 12");
                 break;
             case 2:
-                realSize = 34;
+                realSize = 16;
                 break;
             case 3:
-                realSize = 51;
+                realSize = 24;
                 break;
             case 4:
-                realSize = 68;
+                realSize = 32;
                 break;
             case 5:
-                realSize = 85;
+                realSize = 40;
                 break;
             case 6:
-                realSize = 102;
+                realSize = 48;
                 break;
             case 7:
-                realSize = 119;
+                realSize = 56;
                 break;
         }
-        return PrintCommands.selectCharacterSize(realSize);
+        return selectCharacterSize(realSize);
+    }
+
+    public static byte[] selectCharacterSize(int n) {
+        return new byte[]{29, 15, (byte) n};
     }
 
 }

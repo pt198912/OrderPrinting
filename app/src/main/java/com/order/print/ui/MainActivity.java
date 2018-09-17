@@ -1,26 +1,15 @@
 package com.order.print.ui;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -38,20 +27,27 @@ import com.order.print.biz.OrderPrintBiz;
 import com.order.print.service.OrderJobService;
 import com.order.print.util.IntentUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity  {
-    @BindView(R.id.tv_search_bluetooth)
-    TextView tvSearchBluetooth;
+public class MainActivity extends AppCompatActivity {
+    //    @BindView(R.id.tv_search_bluetooth)
+//    TextView tvSearchBluetooth;
     @BindView(R.id.tv_setting)
     TextView tvSetting;
     @BindView(R.id.tv_order_list)
     TextView tvOrderList;
+    @BindView(R.id.tv_start_bluetooth)
+    TextView tvStartBluetooth;
+    @BindView(R.id.tv_setting)
+    TextView tvSetting;
+    @BindView(R.id.tv_order_his_list)
+    TextView tvOrderHisList;
+    //    @BindView(R.id.tv_stop_bluetooth)
+//    TextView tvStopBluetooth;
     // JobService，执行系统任务
     private JobSchedulerManager mJobManager;
     // 1像素Activity管理类
@@ -70,21 +66,27 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        if (App.getInstance().isPrintOrderFlag()) {
+            tvStartBluetooth.setText("停止服务");
+        } else {
+            tvStartBluetooth.setText("开始服务");
+        }
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             startOrderJobServiceBelowM();
         } else {
             startOrderJobServiceAboveM();
         }
 
-        initPrintBiz();
+
         initBluetoothBiz();
+
     }
 
     private void initPrintBiz() {
         OrderPrintBiz.getInstance().init();
     }
 
-    private void initBluetoothBiz(){
+    private void initBluetoothBiz() {
         BluetoothBiz.getInstance().init();
     }
 
@@ -178,22 +180,29 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
-
-    @OnClick({R.id.tv_search_bluetooth, R.id.tv_setting, R.id.tv_order_list})
+    @OnClick({R.id.tv_setting, R.id.tv_order_list, R.id.tv_start_bluetooth})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.tv_search_bluetooth:
-                IntentUtils.startActivity(this,BluetoothDeviceListActivity.class);
-                break;
+//            case R.id.tv_search_bluetooth:
+//                IntentUtils.startActivity(this, BluetoothDeviceListActivity.class);
+//                break;
             case R.id.tv_setting:
-                IntentUtils.startActivity(this,SettingActivity.class);
+                IntentUtils.startActivity(this, SettingActivity.class);
                 break;
             case R.id.tv_order_list:
-                IntentUtils.startActivity(this,OrderListActivity.class);
+                IntentUtils.startActivity(this, OrderListActivity.class);
                 break;
+            case R.id.tv_start_bluetooth:
+                if (App.getInstance().isPrintOrderFlag()) {
+                    OrderPrintBiz.getInstance().stopPrintService();
+                } else {
+                    OrderPrintBiz.getInstance().startPrintService();
+                }
+                break;
+//            case R.id.tv_stop_bluetooth:
+//                break;
         }
     }
-
 
 
     private void startOrderJobServiceBelowM() {
@@ -246,5 +255,11 @@ public class MainActivity extends AppCompatActivity  {
             moveTaskToBack(false);
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    @OnClick(R.id.tv_order_his_list)
+    public void onViewClicked() {
+        IntentUtils.startActivity(this,His);
     }
 }

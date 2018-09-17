@@ -2,9 +2,11 @@ package com.order.print.ui;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,21 +21,30 @@ import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.bean.QueryOrderResult;
 import com.order.print.biz.BluetoothInfoManager;
+import com.order.print.biz.OrderPrintBiz;
 import com.order.print.net.MyException;
+import com.order.print.net.MyResponse;
 import com.order.print.net.MyResponseCallback;
 import com.order.print.util.DialogUtils;
 import com.order.print.util.HttpUtils;
+import com.order.print.util.IntentUtils;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnRefreshLoadMoreListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import am.example.printer.data.TestPrintDataMaker;
 import am.example.printer.dialogs.BluetoothTestDialogFragment;
+import am.util.printer.PrintExecutor;
+import am.util.printer.PrintSocketHolder;
 import am.util.printer.PrinterWriter;
 import am.util.printer.PrinterWriter58mm;
 import am.util.printer.PrinterWriter80mm;
@@ -41,7 +52,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult> {
+public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult>, PrintExecutor.OnPrintResultListener {
     @BindView(R.id.iv_back)
     ImageView ivBack;
     @BindView(R.id.tv_title)
@@ -54,11 +65,11 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     SmartRefreshLayout smartRefreshLayout;
     @BindView(R.id.tv_right)
     TextView rightTv;
-    List<Order> mDatas = new ArrayList<>();
+    List<Order> mDatas = Collections.synchronizedList(new ArrayList<Order>());
     OrderListAdapter mAdapter;
     @BindView(R.id.tv_conn_state)
     TextView tvConnState;
-
+    private boolean mLoop=true;
     private int type = PrinterWriter58mm.TYPE_58;
     private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
 
@@ -69,13 +80,151 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         ButterKnife.bind(this);
         initView();
         DialogUtils.loading(this, "");
-        getOrderList();
+        startTimer();
+//        startPrintTask();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    private Timer mTimer;
+    private void startTimer(){
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+        mTimer=new Timer();
+        TimerTask task=new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getOrderList();
+//                        mDatas.clear();
+//                        mDatas.addAll(OrderPrintBiz.getInstance().getDatas());
+//                        mAdapter.notifyDataSetChanged();
+//                        DialogUtils.dissLoad();
+                    }
+                });
+
+            }
+        };
+        mTimer.schedule(task,0,App.getInstance().getQueryOrderDuration());
+    }
+
+    private Thread mPrintTh;
+    private List<Order> mPrintingList=new ArrayList<>();
+    private void startPrintTask(){
+        mPrintTh= new Thread(){
+            @Override
+            public void run() {
+                while(App.getInstance().isPrintOrderFlag()){
+                    if(mDatas.size()>0&&BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
+                            &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getBondState()== BluetoothDevice.BOND_BONDED){
+                        List<Order> list=mDatas.subList(0,1);
+                        mPrintingList.clear();
+                        mPrintingList.addAll(list);
+                        printOneOrder(list);
+                        synchronized (mPrintTh){
+                            try {
+                                this.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }else{
+                        try {
+                            Thread.sleep(3000L);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
+        mPrintTh.start();
+    }
+
+    private BluetoothDevice mDevice;
+    private PrintExecutor executor;
+    private TestPrintDataMaker maker;
+
+    private static final String TAG = "OrderListActivity";
+    @Override
+    public void onResult(int errorCode) {
+        Log.d(TAG, "onResult: " + errorCode);
+        switch (errorCode) {
+            case PrintSocketHolder.ERROR_0:
+                if(mPrintingList.size()>0) {
+                    Order order=mPrintingList.get(0);
+                    HttpUtils.updateOrderStatus(order.getOrder_id()+"", "1", new MyResponseCallback<MyResponse>() {
+                        @Override
+                        public void onSuccess(MyResponse data) {
+                            mDatas.removeAll(mPrintingList);
+                            mAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "onSuccess: mPrintTh.notify");
+                            synchronized (mPrintTh) {
+                                mPrintTh.notify();
+                            }
+
+                        }
+
+                        @Override
+                        public void onSuccessList(List<MyResponse> data) {
+
+                        }
+
+                        @Override
+                        public void onFailure(MyException e) {
+
+                        }
+                    },MyResponse.class);
+                }
+
+                break;
+            case PrintSocketHolder.ERROR_1:
+//                dialog.setState(R.string.printer_result_message_2);
+                break;
+            case PrintSocketHolder.ERROR_2:
+//                dialog.setState(R.string.printer_result_message_3);
+                break;
+            case PrintSocketHolder.ERROR_3:
+//                dialog.setState(R.string.printer_result_message_4);
+                break;
+            case PrintSocketHolder.ERROR_4:
+//                dialog.setState(R.string.printer_result_message_5);
+                break;
+            case PrintSocketHolder.ERROR_5:
+//                dialog.setState(R.string.printer_result_message_6);
+                break;
+            case PrintSocketHolder.ERROR_6:
+//                dialog.setState(R.string.printer_result_message_7);
+                break;
+            case PrintSocketHolder.ERROR_100:
+//                dialog.setState(R.string.printer_result_message_8);
+                break;
+        }
+    }
+
+    private void printOneOrder(List<Order> orders){
+            mDevice= BluetoothInfoManager.getInstance().getConnectedBluetooth();
+            if (mDevice == null)
+                return;
+            if (executor == null) {
+                executor = new PrintExecutor(mDevice, type);
+//                executor.setOnStateChangedListener(this);
+                executor.setOnPrintResultListener(this);
+            }
+            executor.setDevice(mDevice);
+            maker = new TestPrintDataMaker(this, "", 500, height,orders);
+            executor.doPrinterRequestAsync(maker);
     }
 
     private void initView() {
         tvTitle.setText("订单列表");
-        rightTv.setText("打印");
-
+        rightTv.setText("设置");
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
         smartRefreshLayout.setOnRefreshListener(new OnRefreshLoadMoreListener() {
@@ -103,13 +252,14 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 public void onClick(View view) {
                     Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
                     startActivity(blue);
-                    finish();
                 }
             });
         }
     }
 
+
     private void getOrderList() {
+        Log.d(TAG, "getOrderList: ");
         HttpUtils.queryOrderPage(this, QueryOrderResult.class);
     }
 
@@ -141,7 +291,8 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 finish();
                 break;
             case R.id.tv_right:
-                checkBluetooth();
+//                checkBluetooth();
+                IntentUtils.startActivity(this,SettingActivity.class);
                 break;
         }
     }
@@ -181,6 +332,10 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     protected void onDestroy() {
         super.onDestroy();
         DialogUtils.dissLoad();
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+
     }
 
     class OrderListAdapter extends BaseAdapter {

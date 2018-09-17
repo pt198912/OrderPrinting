@@ -20,6 +20,25 @@ import org.xutils.x;
 public class App extends Application {
     private static App sInstance;
     private DaemonClient mDaemonClient;
+    private int mQueryOrderDuration=15000;
+    private boolean mPrintOrderFlag=true;
+
+    public void setPrintOrderFlag(boolean printOrderFlag) {
+        this.mPrintOrderFlag = printOrderFlag;
+    }
+
+    public boolean isPrintOrderFlag() {
+        return mPrintOrderFlag;
+    }
+
+    public void setQueryOrderDuration(int queryOrderDuration) {
+        this.mQueryOrderDuration = queryOrderDuration;
+    }
+
+    public int getQueryOrderDuration() {
+        return mQueryOrderDuration;
+    }
+
     public static App getInstance() {
         return sInstance;
     }

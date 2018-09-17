@@ -8,15 +8,7 @@
     tools:context="com.order.print.ui.MainActivity"
     android:gravity="center">
 
-    <TextView
-        android:id="@+id/tv_search_bluetooth"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:text="搜索设备"
-        android:gravity="center"
-        android:background="@drawable/bg_white_radius_5"
-        android:layout_gravity="center_horizontal"
-      />
+
     <TextView
         android:id="@+id/tv_setting"
         android:layout_width="200dp"
@@ -37,5 +29,33 @@
         android:background="@drawable/bg_white_radius_5"
         android:layout_gravity="center_horizontal"
         />
-
+    <TextView
+        android:id="@+id/tv_order_his_list"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:text="历史订单"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_white_radius_5"
+        android:layout_gravity="center_horizontal"
+        />
+    <TextView
+        android:id="@+id/tv_start_bluetooth"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:text="启动服务"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/bg_white_radius_5"
+        android:layout_gravity="center_horizontal"
+        />
+    <!--<TextView-->
+        <!--android:id="@+id/tv_stop_bluetooth"-->
+        <!--android:layout_width="200dp"-->
+        <!--android:layout_height="48dp"-->
+        <!--android:text="停止服务"-->
+        <!--android:gravity="center"-->
+        <!--android:background="@drawable/bg_white_radius_5"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--/>-->
 </LinearLayout>

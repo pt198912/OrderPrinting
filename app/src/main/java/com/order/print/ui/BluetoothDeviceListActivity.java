@@ -149,6 +149,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                     mAdapter.notifyDataSetChanged();
 //                    finish();
                     Toast.makeText(BluetoothDeviceListActivity.this, "已连接打印机", Toast.LENGTH_SHORT).show();
+                    finish();
                 }else{
                     pdConnect = ProgressDialog.show(BluetoothDeviceListActivity.this, "", "开始连接", true, true);
                     pdConnect.setCanceledOnTouchOutside(false);

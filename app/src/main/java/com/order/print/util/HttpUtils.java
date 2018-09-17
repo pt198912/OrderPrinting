@@ -29,7 +29,7 @@ public class HttpUtils {
         paras.put("status",status);
         Map<String,String> headers=new HashMap<>();
         headers.put("XX-Token", UserInfoManager.getInstance().getToken());
-        MyRequest.sendPostRequest(HttpApi.UPDATE_ORDER,headers,paras,cb,cls,false);
+        MyRequest.sendPostRequest(HttpApi.UPDATE_ORDER,headers,paras,cb,cls,true);
     }
     public static <T> void resetOrderStatus(String id, String status, MyResponseCallback<T> cb,Class<T> cls){
         Map<String,String> paras=new HashMap<>();

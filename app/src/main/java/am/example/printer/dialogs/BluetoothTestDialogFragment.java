@@ -10,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import com.order.print.App;
 import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.biz.BluetoothInfoManager;
+import com.order.print.util.HttpUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,7 +49,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
     private static final String EXTRA_ORDERS = "orders";
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private IPTestDialog dialog;
-
+    private static final String TAG = "BluetoothTestDialogFrag";
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         int type = getArguments().getInt(EXTRA_TYPE, PrinterWriter80mm.TYPE_80);
@@ -102,7 +104,7 @@ public class BluetoothTestDialogFragment extends DialogFragment {
             btnPrint = (Button) findViewById(R.id.printer_btn_test_print);
             btnPrint.setOnClickListener(this);
             setEditable(true);
-            maker = new TestPrintDataMaker(context, qr, width, height,orders);
+            maker = new TestPrintDataMaker(context, qr, width, height);
         }
 
         void updateAdapter() {
@@ -145,15 +147,22 @@ public class BluetoothTestDialogFragment extends DialogFragment {
                 executor = new PrintExecutor(mDevice, type);
                 executor.setOnStateChangedListener(this);
                 executor.setOnPrintResultListener(this);
-                executor.setOnPrintResultListener(new PrintExecutor.OnPrintResultListener() {
-                    @Override
-                    public void onResult(int errorCode) {
-
-                    }
-                });
             }
             executor.setDevice(mDevice);
             executor.doPrinterRequestAsync(maker);
+        }
+
+
+        private boolean mFlag=true;
+        private void startPrint(){
+            new Thread(){
+                @Override
+                public void run() {
+                    while(mFlag){
+
+                    }
+                }
+            }.start();
         }
 
         @Override

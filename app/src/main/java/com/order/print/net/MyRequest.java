@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.order.print.util.Constants;
 
 import org.xutils.common.Callback;
@@ -123,10 +124,9 @@ public class MyRequest {
             public void onSuccess(String result) {
 
                 Log.i(Constants.HTTP_TAG, "response-data:" + result);
-
-                MyResponse response = JSON.parseObject(result, MyResponse.class);
+                MyResponse response= JSON.parseObject(result, MyResponse.class);
                 if (null != response) {
-                    if (response.getCode() != 200) {
+                    if (!response.isStatus()) {
                         callBack.onFailure(new MyException(response.getCode(),response.getMessage()));
                     } else {
                         if(response.getResult()!=null){
