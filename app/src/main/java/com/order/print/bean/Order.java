@@ -1,14 +1,16 @@
 package com.order.print.bean;
 
+
 import java.io.Serializable;
 import java.util.List;
+
 
 /**
  * Created by pt198 on 05/09/2018.
  */
-
 public class Order implements Serializable{
-//     "order_id": 841,                 订单编号
+    private static final long serialVersionUID = 4404848027447207863L;
+    //     "order_id": 841,                 订单编号
 //        "shop_id": 265,
 //                "logistics": 0.01,              配送费
 //        "need_pay": 0.03,                已付
@@ -26,6 +28,7 @@ public class Order implements Serializable{
 //            "total_price": 0.01,            商品费用
 //            "name": "烤深海秋刀鱼"           商品名称
 //        }]
+
     private int order_id;
     private int shop_id;
     private double logistics;
@@ -36,6 +39,8 @@ public class Order implements Serializable{
     private String shop_name;
     private OrderAddr addr;
     private List<OrderItem> items;
+
+
 
     public int getOrder_id() {
         return order_id;

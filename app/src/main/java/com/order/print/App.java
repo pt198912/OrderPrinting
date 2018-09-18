@@ -1,8 +1,8 @@
 package com.order.print;
 
 import android.app.Application;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+
 
 import com.marswin89.marsdaemon.DaemonClient;
 import com.marswin89.marsdaemon.DaemonConfigurations;
@@ -58,6 +58,7 @@ public class App extends Application {
         sInstance=this;
         initXUtils();
     }
+
     private void initXUtils(){
         x.Ext.init(this);
         x.Ext.setDebug(true);//是否输出Debug日志

@@ -1,13 +1,11 @@
 package com.order.print.ui;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.PopupWindow;
@@ -22,11 +20,17 @@ import com.jiangdg.keepappalive.utils.ScreenManager;
 import com.order.print.App;
 import com.order.print.R;
 import com.order.print.bean.BluetoothBean;
+import com.order.print.bean.Order;
+import com.order.print.bean.OrderAddr;
+import com.order.print.bean.OrderItem;
 import com.order.print.biz.BluetoothBiz;
 import com.order.print.biz.OrderPrintBiz;
+import com.order.print.database.DbManager;
 import com.order.print.service.OrderJobService;
+import com.order.print.threadpool.CustomThreadPool;
 import com.order.print.util.IntentUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -42,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
     TextView tvOrderList;
     @BindView(R.id.tv_start_bluetooth)
     TextView tvStartBluetooth;
-    @BindView(R.id.tv_setting)
-    TextView tvSetting;
     @BindView(R.id.tv_order_his_list)
     TextView tvOrderHisList;
     //    @BindView(R.id.tv_stop_bluetooth)
@@ -79,7 +81,37 @@ public class MainActivity extends AppCompatActivity {
 
 
         initBluetoothBiz();
+        addDbDataForTest();
+    }
 
+    private void addDbDataForTest(){
+        CustomThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                for(int i=0;i<20;i++){
+                    Order o=new Order();
+                    o.setOrder_id(123+i);
+                    OrderAddr addr=new OrderAddr();
+                    addr.setAddr("asdsa"+i);
+                    addr.setMobile("123"+i);
+                    addr.setName("pt"+i);
+                    addr.setOrderId(123+i);
+                    o.setAddr(addr);
+                    o.setCreate_time(124);
+                    List<OrderItem> items=new ArrayList<>();
+                    for(int j=0;j<3;j++){
+                        OrderItem item=new OrderItem();
+                        item.setName("item"+j);
+                        item.setNum(j);
+                        item.setOrderId(123+i);
+                        items.add(item);
+                    }
+                    o.setItems(items);
+                    Log.d("pengtao", "insertOrder: ");
+                    DbManager.getInstance().insertOrder(o);
+                }
+            }
+        });
     }
 
     private void initPrintBiz() {
@@ -120,29 +152,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void showSuccessDialog() {
-        pdSearch.dismiss();
-        DialogInterface.OnClickListener mOnClickListener = new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case Dialog.BUTTON_POSITIVE:
-                        OrderPrintBiz.getInstance().printOrder();
-                        break;
-                    case Dialog.BUTTON_NEGATIVE:
-                        dialog.dismiss();
-                        break;
-                }
-            }
-        };
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("提示");
-        builder.setMessage("连接成功，是否开始打印?");
-        builder.setPositiveButton("确定", mOnClickListener);
-        builder.setNegativeButton("取消", mOnClickListener);
-        builder.create().show();
-    }
 
     @Override
     public void onBackPressed() {
@@ -154,30 +163,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void showErrorDialog() {
-        pdSearch.dismiss();
-        DialogInterface.OnClickListener mOnClickListener = new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case Dialog.BUTTON_POSITIVE:
-                        showLoadingDlg();
-                        BluetoothBiz.getInstance().searchBlueToothDevice(MainActivity.this);
-                        break;
-                    case Dialog.BUTTON_NEGATIVE:
-                        dialog.dismiss();
-                        break;
-                }
-            }
-        };
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("提示");
-        builder.setMessage("连接失败，是否重试?");
-        builder.setPositiveButton("确定", mOnClickListener);
-        builder.setNegativeButton("取消", mOnClickListener);
-        builder.create().show();
-    }
 
 
     @OnClick({R.id.tv_setting, R.id.tv_order_list, R.id.tv_start_bluetooth})
@@ -260,6 +245,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.tv_order_his_list)
     public void onViewClicked() {
-        IntentUtils.startActivity(this,His);
+        IntentUtils.startActivity(this,HistoryOrderListActvity.class);
     }
 }

@@ -215,6 +215,8 @@
             android:configChanges="orientation|screenSize|locale|layoutDirection"
             android:exported="false">
         </activity>
+        <activity android:name=".ui.HistoryOrderListActvity" android:screenOrientation="portrait"/>
+        <provider android:name=".database.OrderContentProvider" android:authorities="com.order.print.db"/>
         <service android:name=".service.PrintService"/>
     </application>
 

@@ -1,5 +1,6 @@
 package com.order.print.bean;
 
+
 import java.io.Serializable;
 
 /**
@@ -7,12 +8,23 @@ import java.io.Serializable;
  */
 
 public class OrderItem implements Serializable{
-//      "num": 1,                   商品数量
+    private static final long serialVersionUID = -8781602424821812295L;
+    //      "num": 1,                   商品数量
 //            "total_price": 0.01,            商品费用
 //            "name": "烤深海秋刀鱼"           商品名称
+    private int orderId;
     private int num;
     private double total_price;
     private String name;
+
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
 
     public int getNum() {
         return num;

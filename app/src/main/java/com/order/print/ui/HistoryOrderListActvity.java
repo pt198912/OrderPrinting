@@ -2,6 +2,7 @@ package com.order.print.ui;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,8 @@ import android.widget.TextView;
 
 import com.order.print.R;
 import com.order.print.bean.Order;
-import com.order.print.bean.OrderAddr;
+import com.order.print.database.DbManager;
+import com.order.print.threadpool.CustomThreadPool;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,15 +39,35 @@ public class HistoryOrderListActvity extends BaseActivity {
     ListView lvHis;
     private List<Order> mDatas=new ArrayList<>();
     private OrderListAdapter mAdapter;
+    private static final String TAG = "HistoryOrderListActvity";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_his_order);
         ButterKnife.bind(this);
         initView();
+        initData();
     }
 
     private void initData(){
+        CustomThreadPool.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                mDatas.clear();
+                Log.d(TAG, "initData:");
+                List<Order> datas= DbManager.getInstance().queryAllOrders();
+                Log.d(TAG, "run: "+datas.size());
+                if(datas!=null) {
+                    mDatas.addAll(datas);
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
 
     }
 
