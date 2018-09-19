@@ -1,11 +1,13 @@
 package com.order.print.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -13,8 +15,10 @@ import android.widget.TextView;
 
 import com.order.print.R;
 import com.order.print.bean.Order;
+import com.order.print.biz.OrderPrintBiz;
 import com.order.print.database.DbManager;
 import com.order.print.threadpool.CustomThreadPool;
+import com.order.print.util.IntentUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,8 +77,24 @@ public class HistoryOrderListActvity extends BaseActivity {
 
     private void initView() {
         tvTitle.setText("历史订单");
+        tvRight.setVisibility(View.VISIBLE);
+        tvRight.setText("打印");
+        tvRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OrderPrintBiz.getInstance().addHistoryOrderList(mDatas);
+            }
+        });
         mAdapter=new OrderListAdapter();
         lvHis.setAdapter(mAdapter);
+        lvHis.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent detail=new Intent(HistoryOrderListActvity.this,OrderDetailActivity.class);
+                detail.putExtra("extra",mDatas.get(i));
+                startActivity(detail);
+            }
+        });
     }
 
     @OnClick(R.id.iv_back)

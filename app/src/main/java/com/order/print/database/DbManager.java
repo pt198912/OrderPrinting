@@ -66,7 +66,7 @@ public class DbManager {
         values.put("name",addr.getName());
         values.put("mobile",addr.getMobile());
         values.put("addr",addr.getAddr());
-        values.put("orderId",addr.getOrderId());
+        values.put("order_id",addr.getOrderId());
         mCr.insert(OrderContentProvider.ADDR_URI,values);
     }
     public void insertOrderItems(List<OrderItem> items){
@@ -75,7 +75,7 @@ public class DbManager {
             values.put("name", item.getName());
             values.put("num", item.getNum());
             values.put("total_price", item.getTotal_price());
-            values.put("orderId", item.getOrderId());
+            values.put("order_id", item.getOrderId());
             mCr.insert(OrderContentProvider.ORDER_ITEM_URI, values);
         }
     }
@@ -104,19 +104,19 @@ public class DbManager {
         return list;
     }
     private OrderAddr queryAddr(int orderId){
-        Cursor c=mCr.query(OrderContentProvider.ADDR_URI,null,"orderId=?",new String[]{orderId+""},null);
+        Cursor c=mCr.query(OrderContentProvider.ADDR_URI,null,"order_id=?",new String[]{orderId+""},null);
         if(c!=null&&c.moveToNext()){
             OrderAddr addr=new OrderAddr();
             addr.setName(c.getString(c.getColumnIndex("name")));
             addr.setMobile(c.getString(c.getColumnIndex("mobile")));
             addr.setAddr(c.getString(c.getColumnIndex("addr")));
-            addr.setOrderId(c.getInt(c.getColumnIndex("orderId")));
+            addr.setOrderId(c.getInt(c.getColumnIndex("order_id")));
             return addr;
         }
         return null;
     }
     private List<OrderItem> queryOrderItems(int orderId){
-        Cursor c=mCr.query(OrderContentProvider.ORDER_ITEM_URI,null,"orderId=?",new String[]{orderId+""},null);
+        Cursor c=mCr.query(OrderContentProvider.ORDER_ITEM_URI,null,"order_id=?",new String[]{orderId+""},null);
         List<OrderItem> items=new ArrayList<>();
         if(c!=null){
             while(c.moveToNext()) {
@@ -124,7 +124,7 @@ public class DbManager {
                 item.setName(c.getString(c.getColumnIndex("name")));
                 item.setNum(c.getInt(c.getColumnIndex("num")));
                 item.setTotal_price(Double.parseDouble(c.getString(c.getColumnIndex("total_price"))));
-                item.setOrderId(c.getInt(c.getColumnIndex("orderId")));
+                item.setOrderId(c.getInt(c.getColumnIndex("order_id")));
                 items.add(item);
             }
         }

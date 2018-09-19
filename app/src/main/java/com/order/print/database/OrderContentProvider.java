@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.order.print.App;
 
 /**
  * Created by pt198 on 18/09/2018.
@@ -72,6 +71,7 @@ public class OrderContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        Log.d(TAG, "onCreate: ");
         helper = new DBHelper(getContext());
         return true;
     }
@@ -127,7 +127,7 @@ public class OrderContentProvider extends ContentProvider {
             throw new IllegalArgumentException("Wrong URI: " + uri);
         }
         db = helper.getWritableDatabase();
-        long rowId = db.insert(table, null, values);
+        long rowId = db.insertWithOnConflict(table, null, values,SQLiteDatabase.CONFLICT_IGNORE);
         Log.d(TAG, "insert: rowId "+rowId);
         if (rowId > 0) {
             notifyDataChanged(table);
@@ -187,7 +187,7 @@ public class OrderContentProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        int count = db.update(table, values, selection, selectionArgs);
+        int count = db.updateWithOnConflict(table, values, selection, selectionArgs,SQLiteDatabase.CONFLICT_IGNORE);
         if (count > 0) {
             notifyDataChanged(table);
         }

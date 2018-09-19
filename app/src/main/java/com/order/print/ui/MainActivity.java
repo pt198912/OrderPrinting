@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         CustomThreadPool.getInstance().submit(new Runnable() {
             @Override
             public void run() {
+                Log.d("pengtao", "run: ");
                 for(int i=0;i<20;i++){
                     Order o=new Order();
                     o.setOrder_id(123+i);

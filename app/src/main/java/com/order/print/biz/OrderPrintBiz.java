@@ -104,37 +104,53 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
             case PrintSocketHolder.ERROR_0:
                 if(mPrintingList.size()>0) {
                     Order order=mPrintingList.get(0);
-                    HttpUtils.updateOrderStatus(order.getOrder_id()+"", "1", new MyResponseCallback<MyResponse>() {
-                        @Override
-                        public void onSuccess(MyResponse data) {
-
+                    boolean isHistory=false;
+                    for(int i=0;i<mHistoryOrders.size();i++){
+                        if(mHistoryOrders.get(i).getOrder_id()==order.getOrder_id()){
+                            isHistory=true;
+                            break;
                         }
+                    }
+                    if(isHistory){
+                        mHistoryOrders.removeAll(mPrintingList);
+                        mDatas.removeAll(mPrintingList);
+                        Log.d(TAG, "onSuccess: isHistory mHistoryOrders.size "+mHistoryOrders.size());
+                        synchronized (mPrintTh) {
+                            mPrintTh.notifyAll();
+                        }
+                    }else {
+                        HttpUtils.updateOrderStatus(order.getOrder_id() + "", "1", new MyResponseCallback<MyResponse>() {
+                            @Override
+                            public void onSuccess(MyResponse data) {
 
-                        @Override
-                        public void onSuccessList(List<MyResponse> data) {
-                            CustomThreadPool.getInstance().submit(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Log.d(TAG, "run: insertOrder");
-                                    DbManager.getInstance().insertOrder(mPrintingList);
+                            }
+
+                            @Override
+                            public void onSuccessList(List<MyResponse> data) {
+                                CustomThreadPool.getInstance().submit(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.d(TAG, "run: insertOrder");
+                                        DbManager.getInstance().insertOrder(mPrintingList);
+                                    }
+                                });
+
+                                mDatas.removeAll(mPrintingList);
+                                Log.d(TAG, "onSuccess: mPrintTh.notify");
+                                synchronized (mPrintTh) {
+                                    mPrintTh.notifyAll();
                                 }
-                            });
 
-                            mDatas.removeAll(mPrintingList);
-                            Log.d(TAG, "onSuccess: mPrintTh.notify");
-                            synchronized (mPrintTh) {
-                                mPrintTh.notifyAll();
                             }
 
-                        }
-
-                        @Override
-                        public void onFailure(MyException e) {
-                            synchronized (mPrintTh) {
-                                mPrintTh.notifyAll();
+                            @Override
+                            public void onFailure(MyException e) {
+                                synchronized (mPrintTh) {
+                                    mPrintTh.notifyAll();
+                                }
                             }
-                        }
-                    },MyResponse.class);
+                        }, MyResponse.class);
+                    }
                 }
 
                 break;
@@ -162,7 +178,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         }
     }
 
-    private void printOneOrder(List<Order> orders){
+    public void printOneOrder(List<Order> orders){
         Log.d(TAG, "printOneOrder: ");
         mDevice= BluetoothInfoManager.getInstance().getConnectedBluetooth();
         if (mDevice == null)
@@ -177,6 +193,14 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         executor.doPrinterRequestAsync(maker);
     }
 
+    private List<Order> mHistoryOrders=new ArrayList<>();
+
+    public void addHistoryOrderList(List<Order> orders){
+        if(orders!=null) {
+            mHistoryOrders.addAll(orders);
+        }
+        this.mDatas.addAll(0,orders);
+    }
 
     private Timer mTimer;
     private void startTimer(){
@@ -209,6 +233,9 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
             Log.d(TAG, "onSuccess: " + data.getData().size());
         }catch (Exception e){
             e.printStackTrace();
+        }
+        if(mHistoryOrders!=null){
+            mDatas.addAll(mHistoryOrders);
         }
         mDatas.addAll(data.getData());
 

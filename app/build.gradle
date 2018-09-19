@@ -43,4 +43,5 @@ dependencies {
     implementation 'com.google.zxing:core:3.3.0'
     compile 'org.greenrobot:greendao:3.2.2' // add library
     compile 'org.greenrobot:greendao-generator:3.2.2'
+//    debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
 }

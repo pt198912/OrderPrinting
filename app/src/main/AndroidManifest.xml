@@ -216,6 +216,7 @@
             android:exported="false">
         </activity>
         <activity android:name=".ui.HistoryOrderListActvity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.OrderDetailActivity" android:screenOrientation="portrait"/>
         <provider android:name=".database.OrderContentProvider" android:authorities="com.order.print.db"/>
         <service android:name=".service.PrintService"/>
     </application>

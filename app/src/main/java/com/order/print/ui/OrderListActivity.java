@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -227,6 +228,14 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         rightTv.setText("设置");
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
+        lvOrderList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent detail=new Intent(OrderListActivity.this,OrderDetailActivity.class);
+                detail.putExtra("extra",mDatas.get(i));
+                startActivity(detail);
+            }
+        });
         smartRefreshLayout.setOnRefreshListener(new OnRefreshLoadMoreListener() {
             @Override
             public void onLoadMore(RefreshLayout refreshLayout) {

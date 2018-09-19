@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 public class DBHelper extends SQLiteOpenHelper {
-    public static final String DB_NAME="order_print";
+    public static final String DB_NAME="order_print.db";
     private static final int DB_VERSION=1;
     public DBHelper(Context context){
         this(context,DB_NAME,null,DB_VERSION);
@@ -27,22 +27,22 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_ORDERS="orders";
     public static final String TABLE_ADDR="addrs";
     public static final String TABLE_ORDER_ITEM="items";
-    private static final String SQL_CREATE_TABLE_ORDER="create table if not exist "+TABLE_ORDERS+"(" +
+    private static final String SQL_CREATE_TABLE_ORDER="create table if not exists "+TABLE_ORDERS+" (" +
             "order_id integer primary key," +
             "shop_id integer ," +
             "logistics text," +
             "need_pay text," +
-            "full_reduce_price text," +
+            "full_reduce_price varchar," +
             "create_time text," +
             "cj_money text," +
             "shop_name text)";
-    private static final String SQL_CREATE_TABLE_ADDR="create table if not exist "+TABLE_ADDR+"(" +
-            "orderId  integer primary key," +
+    private static final String SQL_CREATE_TABLE_ADDR="create table if not exists "+TABLE_ADDR+" (" +
+            "order_id  integer primary key," +
             "name text," +
             "mobile text," +
             "addr text)";
-    private static final String SQL_CREATE_TABLE_ITEMS="create table if not exist "+TABLE_ORDER_ITEM+"(" +
-            "orderId  integer primary key," +
+    private static final String SQL_CREATE_TABLE_ITEMS="create table if not exists "+TABLE_ORDER_ITEM+" (" +
+            "order_id  integer," +
             "num integer," +
             "total_price text," +
             "name text)";
@@ -52,10 +52,13 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = "DBHelper";
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        Log.d(TAG, "onCreate: ");
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_ORDER);
+        Log.d(TAG, "onCreate: SQL_CREATE_TABLE_ORDER success");
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_ADDR);
+        Log.d(TAG, "onCreate: SQL_CREATE_TABLE_ADDR success");
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_ITEMS);
-        Log.d(TAG, "onCreate: execSQL success");
+        Log.d(TAG, "onCreate: SQL_CREATE_TABLE_ITEMS success");
     }
 
     @Override
