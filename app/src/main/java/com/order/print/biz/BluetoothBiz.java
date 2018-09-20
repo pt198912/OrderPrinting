@@ -48,6 +48,8 @@ import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.order.print.player.VoicePlayerManager.VOICE_BLUE_CONN;
+import static com.order.print.player.VoicePlayerManager.VOICE_BLUE_DISCONN;
 
 
 /**
@@ -55,10 +57,10 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
  */
 
 public class BluetoothBiz {
-    private ArrayList<BluetoothBean> mBluetoothList;
+    private ArrayList<BluetoothBean> mBluetoothList=new ArrayList<>();
     BluetoothAdapter adapter;
     MyBroadcastReceiver receiver;
-    ArrayList<BluetoothBean> mBluetoothList2;
+    ArrayList<BluetoothBean> mBluetoothList2=new ArrayList<>();
     Thread mThread;
     BluetoothSocket socket;
     private Handler mHandler;
@@ -307,7 +309,7 @@ public class BluetoothBiz {
                         break;
                 }
             }else if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
-                VoicePlayerManager.getInstance().playVoice(R.raw.blue_conn);
+                VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_CONN);
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 BluetoothInfoManager.getInstance().setConnected(true);
                 BluetoothInfoManager.getInstance().setConnectedBluetooth(device);
@@ -318,7 +320,7 @@ public class BluetoothBiz {
                 //连接上了
             } else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
                 //蓝牙连接被切断
-                VoicePlayerManager.getInstance().playVoice(R.raw.blue_disconn);
+                VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null

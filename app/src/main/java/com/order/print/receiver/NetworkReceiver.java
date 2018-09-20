@@ -66,11 +66,11 @@ public class NetworkReceiver extends BroadcastReceiver {
                     if (info.getType() == ConnectivityManager.TYPE_WIFI
                             || info.getType() == ConnectivityManager.TYPE_MOBILE) {
                         Log.i(TAG, getConnectionType(info.getType()) + "连上");
-                        VoicePlayerManager.getInstance().playVoice(R.raw.net_conn);
+                        VoicePlayerManager.getInstance().playVoice(VoicePlayerManager.VOICE_NET_CONN);
                     }
                 } else {
                     Log.i(TAG, getConnectionType(info.getType()) + "断开");
-                    VoicePlayerManager.getInstance().playVoice(R.raw.net_conn);
+                    VoicePlayerManager.getInstance().playVoice(VoicePlayerManager.VOICE_NET_DISCONN);
                 }
             }
         }

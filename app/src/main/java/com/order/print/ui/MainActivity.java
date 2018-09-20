@@ -26,8 +26,12 @@ import com.order.print.bean.OrderItem;
 import com.order.print.biz.BluetoothBiz;
 import com.order.print.biz.OrderPrintBiz;
 import com.order.print.database.DbManager;
+import com.order.print.net.MyException;
+import com.order.print.net.MyResponse;
+import com.order.print.net.MyResponseCallback;
 import com.order.print.service.OrderJobService;
 import com.order.print.threadpool.CustomThreadPool;
+import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
 
 import java.util.ArrayList;
@@ -62,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     List<BluetoothBean> mBluetoothList;
     PopupWindow pw;
     ProgressDialog pdConnect;
-
+    private static final String TAG = "MainActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +86,28 @@ public class MainActivity extends AppCompatActivity {
 
         initBluetoothBiz();
 //        addDbDataForTest();
+//        updateData();
+    }
+
+    private void updateData(){
+        for(int i=481;i<=487;i++) {
+            HttpUtils.updateOrderStatus(i + "", "1", new MyResponseCallback<MyResponse>() {
+                @Override
+                public void onSuccess(MyResponse data) {
+
+                }
+
+                @Override
+                public void onSuccessList(List<MyResponse> data) {
+                    Log.d(TAG, "onSuccessList: ");
+                }
+
+                @Override
+                public void onFailure(MyException e) {
+                    Log.d(TAG, "onFailure: ");
+                }
+            }, MyResponse.class);
+        }
     }
 
     private void addDbDataForTest(){

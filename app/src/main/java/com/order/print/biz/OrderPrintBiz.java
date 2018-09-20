@@ -119,6 +119,19 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                             mPrintTh.notifyAll();
                         }
                     }else {
+//                        CustomThreadPool.getInstance().submit(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Log.d(TAG, "run: insertOrder");
+//                                DbManager.getInstance().insertOrder(mPrintingList);
+//                            }
+//                        });
+//
+//                        mDatas.removeAll(mPrintingList);
+//                        Log.d(TAG, "onSuccess: mPrintTh.notify");
+//                        synchronized (mPrintTh) {
+//                            mPrintTh.notifyAll();
+//                        }
                         HttpUtils.updateOrderStatus(order.getOrder_id() + "", "1", new MyResponseCallback<MyResponse>() {
                             @Override
                             public void onSuccess(MyResponse data) {

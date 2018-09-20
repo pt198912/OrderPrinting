@@ -92,6 +92,7 @@ public class HistoryOrderListActvity extends BaseActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent detail=new Intent(HistoryOrderListActvity.this,OrderDetailActivity.class);
                 detail.putExtra("extra",mDatas.get(i));
+                detail.putExtra("extra1",true);
                 startActivity(detail);
             }
         });

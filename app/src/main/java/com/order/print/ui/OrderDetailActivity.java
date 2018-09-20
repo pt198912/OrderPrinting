@@ -54,7 +54,7 @@ public class OrderDetailActivity extends BaseActivity {
     @BindView(R.id.tv_favourable)
     TextView tvFavourable;
     private Order mOrder;
-
+    private boolean mHistoryFlag;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,12 +66,17 @@ public class OrderDetailActivity extends BaseActivity {
 
     private void getIntntData() {
         mOrder = (Order) getIntent().getSerializableExtra("extra");
-
+        mHistoryFlag=getIntent().getBooleanExtra("extra1",false);
     }
     private void initView(){
         tvTitle.setText("订单详情");
-        tvRight.setVisibility(View.VISIBLE);
-        tvRight.setText("打印");
+
+        if(mHistoryFlag){
+            tvRight.setVisibility(View.VISIBLE);
+            tvRight.setText("打印");
+        }else{
+            tvRight.setVisibility(View.GONE);
+        }
         tvRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

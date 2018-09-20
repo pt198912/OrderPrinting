@@ -2,11 +2,14 @@ package com.order.print.player;
 
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.provider.Telephony;
+import android.util.Log;
 
 import com.order.print.App;
 import com.order.print.R;
+import com.order.print.threadpool.CustomThreadPool;
 
 import java.io.IOException;
 
@@ -23,7 +26,7 @@ public class VoicePlayerManager {
     public static final int VOICE_BLUE_DISCONN=3;
     public static final int VOICE_BLUE_CONN=4;
     public static final int VOICE_ORDER_CANCEL=5;
-
+    private static final String TAG = "VoicePlayerManager";
     private static class SingletonInstance{
         private static final VoicePlayerManager INSTANCE=new VoicePlayerManager();
     }
@@ -34,6 +37,7 @@ public class VoicePlayerManager {
         return SingletonInstance.INSTANCE;
     }
     public void playVoice(int voiceType){
+        Log.d(TAG, "playVoice: "+voiceType);
         switch (voiceType){
             case VOICE_NEW_ORDER:
                 play(App.getInstance(),R.raw.new_order);
@@ -48,6 +52,7 @@ public class VoicePlayerManager {
                 play(App.getInstance(),R.raw.blue_disconn);
                 break;
             case VOICE_BLUE_CONN:
+                Log.d(TAG, "playVoice: VOICE_BLUE_CONN");
                 play(App.getInstance(),R.raw.blue_conn);
                 break;
             case VOICE_ORDER_CANCEL:
@@ -57,16 +62,17 @@ public class VoicePlayerManager {
     }
 
     private void play(Context context, int resId){
+        Log.d(TAG, "play: ");
         if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){
             mMediaPlayer.stop();
+            mMediaPlayer.release();
         }
-        try {
-            mMediaPlayer=MediaPlayer.create(context,resId);
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Log.d(TAG, "MediaPlayer.create: ");
+        mMediaPlayer=MediaPlayer.create(context,resId);
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        // 通过异步的方式装载媒体资源
+        mMediaPlayer.start();
+
     }
     private void stop(){
         if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){
