@@ -219,6 +219,15 @@
         <activity android:name=".ui.OrderDetailActivity" android:screenOrientation="portrait"/>
         <provider android:name=".database.OrderContentProvider" android:authorities="com.order.print.db"/>
         <service android:name=".service.PrintService"/>
+        <service android:name=".service.BluetoothService"/>
+        <!--在AndroidManifest.xml中用标签生命注册，并在标签内用标签设置过滤器-->
+        <receiver android:name=".receiver.NetworkReceiver" >//继承BroadcastReceiver，重写onReceiver方法
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />//使用过滤器，接收指定action广播
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

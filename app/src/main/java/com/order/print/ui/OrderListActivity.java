@@ -3,7 +3,10 @@ package com.order.print.ui;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -26,6 +29,7 @@ import com.order.print.biz.OrderPrintBiz;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponse;
 import com.order.print.net.MyResponseCallback;
+import com.order.print.util.Constants;
 import com.order.print.util.DialogUtils;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
@@ -53,6 +57,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.order.print.util.Constants.ACTION_UPDATE_CONN_STATE;
+
 public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult>, PrintExecutor.OnPrintResultListener {
     @BindView(R.id.iv_back)
     ImageView ivBack;
@@ -71,6 +77,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     @BindView(R.id.tv_conn_state)
     TextView tvConnState;
     private boolean mLoop=true;
+    UpdateConnStateRecevier mReceiver;
     private int type = PrinterWriter58mm.TYPE_58;
     private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
 
@@ -82,14 +89,29 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         initView();
         DialogUtils.loading(this, "");
         startTimer();
+        registeReceiver();
 //        startPrintTask();
+    }
+
+    private void registeReceiver(){
+        mReceiver=new UpdateConnStateRecevier();
+        IntentFilter filter=new IntentFilter();
+        filter.addAction(ACTION_UPDATE_CONN_STATE);
+        registerReceiver(mReceiver,filter);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
     }
-
+    private class UpdateConnStateRecevier extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(Constants.ACTION_UPDATE_CONN_STATE)){
+                updateBlueConnState();
+            }
+        }
+    }
     private Timer mTimer;
     private void startTimer(){
         if(mTimer!=null){
@@ -103,6 +125,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                     @Override
                     public void run() {
                         getOrderList();
+
 //                        mDatas.clear();
 //                        mDatas.addAll(OrderPrintBiz.getInstance().getDatas());
 //                        mAdapter.notifyDataSetChanged();
@@ -225,7 +248,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
 
     private void initView() {
         tvTitle.setText("订单列表");
-        rightTv.setText("设置");
+//        rightTv.setText("设置");
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
         lvOrderList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -247,25 +270,29 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 getOrderList();
             }
         });
+        tvConnState.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
+                startActivity(blue);
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null){
-            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress()));
-        }else{
-            tvConnState.setText(getResources().getString(R.string.label_no_conn));
-            tvConnState.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent blue=new Intent(OrderListActivity.this,BluetoothDeviceListActivity.class);
-                    startActivity(blue);
-                }
-            });
-        }
+        updateBlueConnState();
     }
 
+    private void updateBlueConnState(){
+        if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null&&BluetoothInfoManager.getInstance().isConnected()){
+            tvConnState.setText(String.format(getResources().getString(R.string.label_conncted),BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress())+"");
+        }else{
+            tvConnState.setText(getResources().getString(R.string.label_no_conn));
+        }
+
+    }
 
     private void getOrderList() {
         Log.d(TAG, "getOrderList: ");
@@ -289,7 +316,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     @Override
     public void onFailure(MyException e) {
         DialogUtils.dissLoad();
-        Toast.makeText(this, "查询订单失败", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "查询订单失败", Toast.LENGTH_SHORT).show();
         smartRefreshLayout.finishRefresh();
     }
 
@@ -301,7 +328,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 break;
             case R.id.tv_right:
 //                checkBluetooth();
-                IntentUtils.startActivity(this,SettingActivity.class);
+//                IntentUtils.startActivity(this,SettingActivity.class);
                 break;
         }
     }
@@ -344,7 +371,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         if(mTimer!=null){
             mTimer.cancel();
         }
-
+        unregisterReceiver(mReceiver);
     }
 
     class OrderListAdapter extends BaseAdapter {

@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -20,12 +21,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-import com.gprinter.io.GpDevice;
-import com.gprinter.aidl.GpService;
 import com.order.print.App;
 
 import com.order.print.IBluetoothService;
+import com.order.print.R;
 import com.order.print.bean.BluetoothBean;
+import com.order.print.player.VoicePlayerManager;
+import com.order.print.service.BluetoothService;
 import com.order.print.util.Constants;
 import com.order.print.util.IntentUtils;
 import com.order.print.util.SharePrefUtil;
@@ -38,11 +40,13 @@ import java.util.HashSet;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import static android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED;
 import static android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED;
-import static android.bluetooth.BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED;
+import static android.content.Context.MODE_PRIVATE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 
@@ -57,19 +61,58 @@ public class BluetoothBiz {
     ArrayList<BluetoothBean> mBluetoothList2;
     Thread mThread;
     BluetoothSocket socket;
-    private GpService mGpService = null;
+    private Handler mHandler;
     private boolean mRegistered;
+    public static final int BLUE_CONNECTED=11;
+    public static final int BLUE_DISCONNECTD=10;
     private static final String TAG = "BluetoothBiz";
     private IBluetoothService mIBlueService;
-    public void setGpService(GpService gpService) {
-        this.mGpService = gpService;
-    }
+
 
     private BluetoothBiz(){
-
+        adapter = BluetoothAdapter.getDefaultAdapter();
+        mHandler=new Handler();
     }
     public void init(){
         bindBluetoothService();
+    }
+    public  void autoConnect(){
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter!=null&&bluetoothAdapter.isEnabled()) {
+            String deviceAddress = SharePrefUtil.getInstance().getString(Constants.SP_KEY_CONNECTED_BLUETOOTH);
+            Log.d(TAG, "autoConnect: "+deviceAddress);
+            if (deviceAddress != null) {
+                Set<BluetoothDevice> pairedDevices = bluetoothAdapter
+                        .getBondedDevices();// 获取本机已配对设备
+                BluetoothDevice target = null;
+                if (pairedDevices.size() > 0) {
+                    for (BluetoothDevice device : pairedDevices) {
+                        if (device.getAddress().equals(deviceAddress))
+                            target = device;
+                        break;
+                    }
+                }
+                if (target != null) {
+//                    if (target.getBondState() == BluetoothDevice.BOND_BONDED) {
+//                        BluetoothBiz.getInstance().connect(target);
+//                        BluetoothInfoManager.getInstance().setConnectedBluetooth(target);
+//                    } else {
+//                        BluetoothBiz.getInstance().bond(target);
+//                        BluetoothBiz.getInstance().connect(target);
+//                        BluetoothInfoManager.getInstance().setConnectedBluetooth(target);
+//                    }
+                    BluetoothBiz.getInstance().bond(target);
+                    BluetoothBiz.getInstance().connect(target);
+                    BluetoothInfoManager.getInstance().setConnectedBluetooth(target);
+                }
+            }
+        }else{
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+            App.getInstance().startActivity(intent);
+            return;
+        }
     }
 
     private void bindBluetoothService(){
@@ -86,6 +129,23 @@ public class BluetoothBiz {
         },BluetoothService.class);
     }
 
+    public void registerReceicer(Context context){
+        if(!mRegistered) {
+            // 设置广播信息过滤
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+            intentFilter.addAction(ACTION_STATE_CHANGED);
+            intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            intentFilter.addAction(ACTION_BOND_STATE_CHANGED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            // 注册广播接收器，接收并处理搜索结果
+            receiver = new MyBroadcastReceiver();
+            context.registerReceiver(receiver, intentFilter);
+            mRegistered=true;
+        }
+    }
+
     private static class SingletonInstance{
         private static final BluetoothBiz INSTANCE=new BluetoothBiz();
     }
@@ -96,23 +156,11 @@ public class BluetoothBiz {
         Log.i(TAG, "searchBlueToothDevice");
         mBluetoothList = new ArrayList<>();
         // 检查设备是否支持蓝牙
-        adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter == null) {
             Toast.makeText(App.getInstance(), "当前设备不支持蓝牙", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(!mRegistered) {
-            // 设置广播信息过滤
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-            intentFilter.addAction(ACTION_STATE_CHANGED);
-            intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-            intentFilter.addAction(ACTION_BOND_STATE_CHANGED);
-            // 注册广播接收器，接收并处理搜索结果
-            receiver = new MyBroadcastReceiver();
-            context.registerReceiver(receiver, intentFilter);
-            mRegistered=true;
-        }
+
         // 如果蓝牙已经关闭就打开蓝牙
         if (!adapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -205,11 +253,11 @@ public class BluetoothBiz {
 //                    }
 //                }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.i(TAG, "搜索完成");
+                Toast.makeText(App.getInstance(), "搜索完成", Toast.LENGTH_SHORT).show();
 
-                if (0 == mBluetoothList.size())
-                    Toast.makeText(App.getInstance(), "搜索不到蓝牙设备", Toast.LENGTH_SHORT).show();
-                else {
+                if (0 == mBluetoothList.size()) {
+//                    Toast.makeText(App.getInstance(), "搜索不到蓝牙设备", Toast.LENGTH_SHORT).show();
+                }else {
                     //去重HashSet add会返回一个boolean值，插入的值已经存在就会返回false 所以true就是不重复的
                     HashSet<BluetoothBean> set = new HashSet<>();
                     mBluetoothList2 = new ArrayList<>();
@@ -249,6 +297,7 @@ public class BluetoothBiz {
                         if(mListener!=null){
                             mListener.onDiscoveryFound(mBluetoothList);
                         }
+                        autoConnect();
                         //开始搜索
                         adapter.startDiscovery();
                         break;
@@ -257,9 +306,58 @@ public class BluetoothBiz {
                     case BluetoothAdapter.STATE_OFF:
                         break;
                 }
+            }else if (action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)) {
+                VoicePlayerManager.getInstance().playVoice(R.raw.blue_conn);
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                BluetoothInfoManager.getInstance().setConnected(true);
+                BluetoothInfoManager.getInstance().setConnectedBluetooth(device);
+                Log.d(TAG, " bluetooth connected");
+                if(mListener!=null){
+                    mListener.onConnectionChanged(BLUE_CONNECTED);
+                }
+                //连接上了
+            } else if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)) {
+                //蓝牙连接被切断
+                VoicePlayerManager.getInstance().playVoice(R.raw.blue_disconn);
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
+                        &&device.getAddress().equals(BluetoothInfoManager.getInstance().getConnectedBluetooth().getAddress())) {
+                    if (mListener != null) {
+                        mListener.onConnectionChanged(BLUE_DISCONNECTD);
+                    }
+                    if( BluetoothInfoManager.getInstance().isConnected()) {
+                        reconnOnBlueDisconn();
+                    }
+                }
+                BluetoothInfoManager.getInstance().setConnected(false);
+                Log.d(TAG, "bluetooth disconnected "+device.getName());
             }
 
         }
+    }
+
+    public void stopReconn(){
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+    }
+
+    private Timer mTimer;
+    private void reconnOnBlueDisconn(){
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+        mTimer=new Timer();
+        TimerTask task=new TimerTask() {
+            @Override
+            public void run() {
+                if(BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null&&!BluetoothInfoManager.getInstance().isConnected()) {
+                    connect(BluetoothInfoManager.getInstance().getConnectedBluetooth());
+                }
+            }
+        };
+        mTimer.schedule(task,6000);
     }
 
     private void getBoundedDevices(){
@@ -292,13 +390,18 @@ public class BluetoothBiz {
         void onDiscoveryFinish(ArrayList<BluetoothBean> datas);
         void onDiscoveryFound(BluetoothBean data);
         void onDiscoveryFound(List<BluetoothBean> data);
-        void onPrintDeviceConnStatusChanged(BluetoothDevice device,int status);
+//        void onPrintDeviceConnStatusChanged(BluetoothDevice device,int status);
         void onConnectionChanged(int state);
     }
 
     public void setListener(OnBluetoothStateListener listener) {
         this.mListener = listener;
     }
+
+    public OnBluetoothStateListener getListener() {
+        return mListener;
+    }
+
     public synchronized boolean bond(BluetoothDevice device){
         // 配对
         try {
@@ -323,9 +426,11 @@ public class BluetoothBiz {
             return false;
         }
     }
-    /**
-     * 启动连接蓝牙的线程方法
-     */
+
+    public BluetoothSocket getSocket() {
+        return socket;
+    }
+
     public synchronized void connect(BluetoothDevice device) {
         if (mThread != null) {
             mThread.interrupt();
@@ -333,7 +438,7 @@ public class BluetoothBiz {
         }
         if (socket != null) {
             try {
-                mGpService.closePort(0);
+                socket.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -343,10 +448,14 @@ public class BluetoothBiz {
         mThread.start();
     }
 
+    public BluetoothAdapter getAdapter() {
+        return adapter;
+    }
+
     public synchronized void disconnect(){
         if (socket != null) {
             try {
-                mGpService.closePort(0);
+                socket.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -354,6 +463,7 @@ public class BluetoothBiz {
         }
         BluetoothInfoManager.getInstance().setConnectedBluetooth(null);
     }
+
 
     private class ConnectThread extends Thread {
         private BluetoothDevice mmDevice;
@@ -368,6 +478,7 @@ public class BluetoothBiz {
                 if (socket == null) {
                     socket = device.createRfcommSocketToServiceRecord(myUuid);
                 }
+                Log.d(TAG, "ConnectThread: socket "+socket);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -377,62 +488,53 @@ public class BluetoothBiz {
             adapter.cancelDiscovery();
             try {
                 Log.i(TAG,  "连接socket");
+                if(socket==null){
+                    BluetoothInfoManager.getInstance().setConnected(false);
+                    if(mListener!=null){
+                        mListener.onConnectionChanged(BLUE_DISCONNECTD);
+                    }
+                    return;
+                }
                 if (socket.isConnected()) {
                     Log.i(TAG, "已经连接过了");
                     SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
-                    if(mListener!=null) {
-                        mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_CONNECTED);
+                    BluetoothInfoManager.getInstance().setConnected(true);
+                    if(mListener!=null){
+                        mListener.onConnectionChanged(BLUE_CONNECTED);
                     }
                 } else {
-                    if (socket != null) {
-                        try {
-                            if (mGpService != null) {
-                                int state = mGpService.getPrinterConnectStatus(0);
-                                if(mListener!=null) {
-                                    mListener.onPrintDeviceConnStatusChanged(mmDevice,state);
-                                }
-                                switch (state) {
-                                    case GpDevice.STATE_CONNECTED:
-                                        BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
-                                        SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
-                                        break;
-                                    case GpDevice.STATE_LISTEN:
-                                        Log.i(TAG,  "state:STATE_LISTEN");
-                                        break;
-                                    case GpDevice.STATE_CONNECTING:
-                                        Log.i(TAG, "state:STATE_CONNECTING");
-                                        break;
-                                    case GpDevice.STATE_NONE:
-                                        Log.i(TAG,  "state:STATE_NONE");
-                                        mGpService.openPort(0, 4, mmDevice.getAddress(), 0);
-                                        break;
-                                    default:
-                                        Log.i(TAG,  "state:default");
-                                        break;
-                                }
-                            } else {
-                                Log.i(TAG,  "mGpService IS NULL");
-                                if(mListener!=null) {
-                                    mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if(mListener!=null) {
-                                mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
-                            }
+                    socket.connect();
+                    Log.d(TAG, "run: socket.isconnected "+socket.isConnected());
+                    Log.d(TAG, "run: sccket.connect");
+                    if(mListener!=null){
+                        if(socket.isConnected()) {
+                            SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
+                            BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
+                            BluetoothInfoManager.getInstance().setConnected(true);
+                            mListener.onConnectionChanged(BLUE_CONNECTED);
+                        }else{
+                            BluetoothInfoManager.getInstance().setConnected(false);
+                            mListener.onConnectionChanged(BLUE_DISCONNECTD);
                         }
                     }
                 }
             } catch (Exception connectException) {
                 Log.i(TAG,  "连接失败");
-                if(mListener!=null) {
-                    mListener.onPrintDeviceConnStatusChanged(mmDevice,GpDevice.STATE_NONE);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(App.getInstance(), "连接失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                BluetoothInfoManager.getInstance().setConnected(false);
+                if(mListener!=null){
+                    mListener.onConnectionChanged(BLUE_DISCONNECTD);
                 }
                 try {
                     if (socket != null) {
-                        mGpService.closePort(0);
+                        socket.close();
                         socket = null;
                     }
                 } catch (Exception closeException) {

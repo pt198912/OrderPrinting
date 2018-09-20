@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         initBluetoothBiz();
-        addDbDataForTest();
+//        addDbDataForTest();
     }
 
     private void addDbDataForTest(){

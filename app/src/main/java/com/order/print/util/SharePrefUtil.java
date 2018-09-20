@@ -11,7 +11,6 @@ import com.order.print.App;
 
 public class SharePrefUtil {
     private SharedPreferences mSp;
-    private static SharePrefUtil sInstance;
     private static final String KEY_SP_NAME="user_info";
     private SharePrefUtil(){
         mSp= App.getInstance().getSharedPreferences(KEY_SP_NAME, Context.MODE_PRIVATE);

@@ -72,7 +72,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                 while(mLoop){
                     Log.d(TAG, "run:isPrintOrderFlag "+App.getInstance().isPrintOrderFlag()+",mDatas.size() "+mDatas.size());
                     if(App.getInstance().isPrintOrderFlag()&&mDatas.size()>0&&BluetoothInfoManager.getInstance().getConnectedBluetooth()!=null
-                            &&BluetoothInfoManager.getInstance().getConnectedBluetooth().getBondState()== BluetoothDevice.BOND_BONDED){
+                            &&BluetoothInfoManager.getInstance().isConnected()){
                         List<Order> list=mDatas.subList(0,1);
                         mPrintingList.clear();
                         mPrintingList.addAll(list);

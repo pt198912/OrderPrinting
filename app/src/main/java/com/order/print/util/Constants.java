@@ -11,5 +11,5 @@ public class Constants {
     public static final String BUNDLE_KEY_EXTRA="bundle";
     public static final String SP_KEY_TOKEN="token";
     public static final String SP_KEY_CONNECTED_BLUETOOTH="address";
-
+    public static final String ACTION_UPDATE_CONN_STATE="update_blue_conn_state";
 }
