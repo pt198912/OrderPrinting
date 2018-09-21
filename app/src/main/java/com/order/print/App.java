@@ -2,6 +2,7 @@ package com.order.print;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 
 import com.marswin89.marsdaemon.DaemonClient;
@@ -22,7 +23,7 @@ public class App extends Application {
     private DaemonClient mDaemonClient;
     private int mQueryOrderDuration=15000;
     private boolean mPrintOrderFlag=true;
-
+    private static final String TAG = "App";
     public void setPrintOrderFlag(boolean printOrderFlag) {
         this.mPrintOrderFlag = printOrderFlag;
     }
@@ -57,6 +58,16 @@ public class App extends Application {
         super.onCreate();
         sInstance=this;
         initXUtils();
+        setUncaughtExceptionHandler();
+    }
+
+    private void setUncaughtExceptionHandler(){
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable throwable) {
+                Log.d(TAG, "uncaughtException: "+throwable.getMessage().toString());
+            }
+        });
     }
 
     private void initXUtils(){

@@ -73,6 +73,7 @@ public class VoicePlayerManager {
             Log.d(TAG, "MediaPlayer.create: ");
             mMediaPlayer = MediaPlayer.create(context, resId);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setVolume(1.0f,1.0f);
             mMediaPlayer.start();
         }catch (Exception e){
             e.printStackTrace();
