@@ -62,6 +62,16 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         startTimer();
         startPrintTask();
     }
+    public void release(){
+        stopTimer();
+        stopPrintTask();
+    }
+    private void stopPrintTask(){
+        mLoop=false;
+        if(mPrintTh!=null&&!mPrintTh.isInterrupted()){
+            mPrintTh.interrupt();
+        }
+    }
     private Thread mPrintTh;
     private List<Order> mPrintingList=Collections.synchronizedList(new ArrayList<Order>());
     private boolean mLoop=true;
@@ -234,6 +244,11 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
             }
         };
         mTimer.schedule(task,0,App.getInstance().getQueryOrderDuration());
+    }
+    private void stopTimer(){
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
     }
     private void getOrderList() {
         Log.d(TAG, "getOrderList: ");

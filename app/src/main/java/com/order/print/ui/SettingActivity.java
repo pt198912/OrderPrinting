@@ -7,6 +7,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.order.print.R;
+import com.order.print.biz.BluetoothBiz;
+import com.order.print.biz.OrderPrintBiz;
 import com.order.print.biz.UserInfoManager;
 import com.order.print.util.IntentUtils;
 
@@ -39,6 +41,7 @@ public class SettingActivity extends BaseActivity {
             public void onClick(View v) {
                 UserInfoManager.getInstance().setPwd(null);
                 UserInfoManager.getInstance().setToken(null);
+                OrderPrintBiz.getInstance().release();
                 IntentUtils.startActivity(SettingActivity.this,LoginActivity.class);
             }
         });

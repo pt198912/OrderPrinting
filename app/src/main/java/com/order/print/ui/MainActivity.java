@@ -86,12 +86,12 @@ public class MainActivity extends AppCompatActivity {
 
         initBluetoothBiz();
 //        addDbDataForTest();
-//        updateData();
+        updateData();
     }
 
     private void updateData(){
-        for(int i=481;i<=487;i++) {
-            HttpUtils.updateOrderStatus(i + "", "1", new MyResponseCallback<MyResponse>() {
+//        for(int i=481;i<=487;i++) {
+            HttpUtils.resetOrderStatus("848", "0", new MyResponseCallback<MyResponse>() {
                 @Override
                 public void onSuccess(MyResponse data) {
 
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onFailure: ");
                 }
             }, MyResponse.class);
-        }
+//        }
     }
 
     private void addDbDataForTest(){

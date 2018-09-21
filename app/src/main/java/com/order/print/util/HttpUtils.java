@@ -36,6 +36,6 @@ public class HttpUtils {
         paras.put("id",id);
         Map<String,String> headers=new HashMap<>();
         headers.put("XX-Token", UserInfoManager.getInstance().getToken());
-        MyRequest.sendPostRequest(HttpApi.UPDATE_ORDER,headers,paras,cb,cls,false);
+        MyRequest.sendPostRequest(HttpApi.RESET_ORDER_STATUS,headers,paras,cb,cls,true);
     }
 }

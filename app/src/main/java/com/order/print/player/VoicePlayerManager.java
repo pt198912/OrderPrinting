@@ -62,17 +62,21 @@ public class VoicePlayerManager {
     }
 
     private void play(Context context, int resId){
-        Log.d(TAG, "play: ");
-        if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
+        try {
+            Log.d(TAG, "play: ");
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+            }
+            if (mMediaPlayer != null) {
+                mMediaPlayer.release();
+            }
+            Log.d(TAG, "MediaPlayer.create: ");
+            mMediaPlayer = MediaPlayer.create(context, resId);
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.start();
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        Log.d(TAG, "MediaPlayer.create: ");
-        mMediaPlayer=MediaPlayer.create(context,resId);
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        // 通过异步的方式装载媒体资源
-        mMediaPlayer.start();
-
     }
     private void stop(){
         if(mMediaPlayer!=null&&mMediaPlayer.isPlaying()){
