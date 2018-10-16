@@ -5,14 +5,23 @@ import android.content.Context;
 import android.util.Log;
 
 
+import com.facebook.stetho.Stetho;
 import com.marswin89.marsdaemon.DaemonClient;
 import com.marswin89.marsdaemon.DaemonConfigurations;
+import com.order.print.bean.AppConfig;
+import com.order.print.net.MyException;
+import com.order.print.net.MyResponseCallback;
 import com.order.print.receiver.Receiver1;
 import com.order.print.receiver.Receiver2;
 import com.order.print.service.OrderJobService;
 import com.order.print.service.Service2;
+import com.order.print.util.HttpUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xutils.x;
+
+import java.util.List;
 
 /**
  * Created by pt198 on 03/09/2018.
@@ -21,7 +30,7 @@ import org.xutils.x;
 public class App extends Application {
     private static App sInstance;
     private DaemonClient mDaemonClient;
-    private int mQueryOrderDuration=15000;
+    private int mQueryOrderDuration=5000;
     private boolean mPrintOrderFlag=true;
     private static final String TAG = "App";
     public void setPrintOrderFlag(boolean printOrderFlag) {
@@ -59,6 +68,29 @@ public class App extends Application {
         sInstance=this;
         initXUtils();
         setUncaughtExceptionHandler();
+        getAppConfig();
+        Stetho.initializeWithDefaults(this);
+    }
+
+    private void getAppConfig(){
+        HttpUtils.getAppConfig(new MyResponseCallback<AppConfig>() {
+            @Override
+            public void onSuccess(AppConfig data) {
+                if(data!=null) {
+                    setQueryOrderDuration((int) data.getApiInterval());
+                }
+            }
+
+            @Override
+            public void onSuccessList(List<AppConfig> data) {
+
+            }
+
+            @Override
+            public void onFailure(MyException e) {
+                Log.d(TAG, "onFailure: "+e.getMessage());
+            }
+        },AppConfig.class);
     }
 
     private void setUncaughtExceptionHandler(){

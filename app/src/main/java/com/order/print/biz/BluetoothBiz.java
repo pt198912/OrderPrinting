@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -118,17 +119,13 @@ public class BluetoothBiz {
     }
 
     private void bindBluetoothService(){
-        IntentUtils.bindService(App.getInstance(), new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                mIBlueService=IBluetoothService.Stub.asInterface(iBinder);
-            }
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            App.getInstance().startForegroundService(new Intent(App.getInstance(),BluetoothService.class));
+        } else{
+            IntentUtils.startService(App.getInstance(),BluetoothService.class);
+        }
 
-            @Override
-            public void onServiceDisconnected(ComponentName componentName) {
-                mIBlueService=null;
-            }
-        },BluetoothService.class);
     }
 
     public void registerReceicer(Context context){
@@ -492,6 +489,7 @@ public class BluetoothBiz {
                 Log.i(TAG,  "连接socket");
                 if(socket==null){
                     BluetoothInfoManager.getInstance().setConnected(false);
+                    VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
                     if(mListener!=null){
                         mListener.onConnectionChanged(BLUE_DISCONNECTD);
                     }
@@ -502,6 +500,7 @@ public class BluetoothBiz {
                     SharePrefUtil.getInstance().setString(Constants.SP_KEY_CONNECTED_BLUETOOTH,mmDevice.getAddress());
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
                     BluetoothInfoManager.getInstance().setConnected(true);
+                    VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_CONN);
                     if(mListener!=null){
                         mListener.onConnectionChanged(BLUE_CONNECTED);
                     }
@@ -515,9 +514,11 @@ public class BluetoothBiz {
                             BluetoothInfoManager.getInstance().setConnectedBluetooth(mmDevice);
                             BluetoothInfoManager.getInstance().setConnected(true);
                             mListener.onConnectionChanged(BLUE_CONNECTED);
+                            VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_CONN);
                         }else{
                             BluetoothInfoManager.getInstance().setConnected(false);
                             mListener.onConnectionChanged(BLUE_DISCONNECTD);
+                            VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
                         }
                     }
                 }
@@ -531,6 +532,7 @@ public class BluetoothBiz {
                 });
 
                 BluetoothInfoManager.getInstance().setConnected(false);
+                VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
                 if(mListener!=null){
                     mListener.onConnectionChanged(BLUE_DISCONNECTD);
                 }

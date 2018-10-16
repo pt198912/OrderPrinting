@@ -82,7 +82,7 @@ public class TestPrintDataMaker implements PrintDataMaker {
                 printer.setAlignCenter();
                 printer.setEmphasizedOn();
                 printer.setFontSize(BIG_FONT);
-                printer.print("# "+(i+1)+"好食亿点");
+                printer.print("好食亿点");
                 printer.printLineFeed();
                 printer.setFontSize(NORMAL_FONT);
                 printer.setEmphasizedOff();
@@ -101,18 +101,20 @@ public class TestPrintDataMaker implements PrintDataMaker {
                 printer.print("订单号："+order.getOrder_id());
                 printer.printLineFeed();
                 printer.print("下单时间："+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                                .format(new Date(order.getCreate_time())));
+                                .format(new Date(order.getCreate_time()*1000)));
                 printer.printLineFeed();
                 printer.setAlignCenter();
                 printer.print("------------1号口袋------------");
                 printer.printLineFeed();
 //                printer.printLineFeed();
-                printer.setAlignLeft();
+
 //                printer.print("订单号：88888888888888888");
 //                printer.printLineFeed();
                 for(int j=0;j<order.getItems().size();j++){
                     OrderItem item=order.getItems().get(j);
+                    printer.setAlignLeft();
                     printer.print(item.getName()+"              ");
+                    printer.setAlignRight();
                     printer.print("X"+item.getNum()+"  "+item.getTotal_price());
                     printer.printLineFeed();
                 }

@@ -90,7 +90,8 @@
                 android:layout_weight="0.05"
                 android:background="@drawable/edit_bg_01"
                 android:scaleType="centerInside"
-                android:src="@mipmap/login2_display" />
+                android:src="@mipmap/login2_display"
+                android:visibility="invisible"/>
 
         </LinearLayout>
 

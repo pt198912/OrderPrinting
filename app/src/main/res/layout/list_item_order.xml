@@ -1,53 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="60dp"
     android:orientation="horizontal"
     android:paddingLeft="15dp"
+    android:background="@color/white"
+    android:gravity="center_vertical"
     >
     <LinearLayout android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
         android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
         <TextView android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="用户名："/>
+            android:text="用户名："
+            android:textSize="12sp"/>
         <TextView android:id="@+id/user_name"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textSize="12sp"/>
         </LinearLayout>
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
         <TextView android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="订单号："/>
+            android:text="订单号："
+            android:textSize="12sp"/>
         <TextView
             android:id="@+id/tv_order_no"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1"/>
+            android:text="1"
+            android:textSize="12sp"/>
         </LinearLayout>
     </LinearLayout>
-    <LinearLayout android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+    <LinearLayout android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
         android:orientation="vertical">
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
             <TextView android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="商品数量："/>
+                android:text="商品数量："
+                android:textSize="12sp"/>
             <TextView android:id="@+id/tv_count"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="12"/>
+                android:text="12"
+                android:textSize="12sp"/>
         </LinearLayout>
         <LinearLayout android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,11 +68,13 @@
                 android:id="@+id/tv_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="09-05"/>
+                android:text="09-05"
+                android:textSize="12sp"/>
         </LinearLayout>
     </LinearLayout>
     <ImageView android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@mipmap/icon_to"
-        android:padding="15dp"/>
+        android:padding="15dp"
+        android:layout_gravity="center_vertical"/>
 </LinearLayout>

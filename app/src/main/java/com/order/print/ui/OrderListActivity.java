@@ -375,7 +375,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     }
 
     class OrderListAdapter extends BaseAdapter {
-        private SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault());
+        private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         @Override
         public int getCount() {
@@ -402,8 +402,12 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
             } else {
                 holder = (ViewHolder) view.getTag();
             }
-            holder.tvCount.setText(mDatas.get(i).getItems().size() + "");
-            holder.tvDate.setText(sdf.format(new Date(mDatas.get(i).getCreate_time())));
+            int count=0;
+            for(int j=0;j<mDatas.get(i).getItems().size();j++){
+                count+=mDatas.get(i).getItems().get(j).getNum();
+            }
+            holder.tvCount.setText(count+ "");
+            holder.tvDate.setText(sdf.format(new Date(mDatas.get(i).getCreate_time()*1000)));
             holder.tvOrderNo.setText(mDatas.get(i).getOrder_id() + "");
             holder.userName.setText(mDatas.get(i).getAddr().getName());
             return view;

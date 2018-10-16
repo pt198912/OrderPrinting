@@ -37,27 +37,31 @@ public class VoicePlayerManager {
         return SingletonInstance.INSTANCE;
     }
     public void playVoice(int voiceType){
-        Log.d(TAG, "playVoice: "+voiceType);
-        switch (voiceType){
-            case VOICE_NEW_ORDER:
-                play(App.getInstance(),R.raw.new_order);
-                break;
-            case VOICE_NET_DISCONN:
-                play(App.getInstance(),R.raw.net_disconn);
-                break;
-            case VOICE_NET_CONN:
-                play(App.getInstance(),R.raw.net_conn);
-                break;
-            case VOICE_BLUE_DISCONN:
-                play(App.getInstance(),R.raw.blue_disconn);
-                break;
-            case VOICE_BLUE_CONN:
-                Log.d(TAG, "playVoice: VOICE_BLUE_CONN");
-                play(App.getInstance(),R.raw.blue_conn);
-                break;
-            case VOICE_ORDER_CANCEL:
-                play(App.getInstance(),R.raw.order_cancel);
-                break;
+        try {
+            Log.d(TAG, "playVoice: " + voiceType);
+            switch (voiceType) {
+                case VOICE_NEW_ORDER:
+                    play(App.getInstance(), R.raw.new_order);
+                    break;
+                case VOICE_NET_DISCONN:
+                    play(App.getInstance(), R.raw.net_disconn);
+                    break;
+                case VOICE_NET_CONN:
+                    play(App.getInstance(), R.raw.net_conn);
+                    break;
+                case VOICE_BLUE_DISCONN:
+                    play(App.getInstance(), R.raw.blue_disconn);
+                    break;
+                case VOICE_BLUE_CONN:
+                    Log.d(TAG, "playVoice: VOICE_BLUE_CONN");
+                    play(App.getInstance(), R.raw.blue_conn);
+                    break;
+                case VOICE_ORDER_CANCEL:
+                    play(App.getInstance(), R.raw.order_cancel);
+                    break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -72,9 +76,12 @@ public class VoicePlayerManager {
             }
             Log.d(TAG, "MediaPlayer.create: ");
             mMediaPlayer = MediaPlayer.create(context, resId);
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setVolume(1.0f,1.0f);
+            AudioManager am=(AudioManager)App.getInstance().getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            am.setStreamVolume(AudioManager.STREAM_MUSIC,maxVolume,AudioManager.FLAG_PLAY_SOUND);
+//            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.start();
+//            mMediaPlayer.setVolume(1.0f,1.0f);
         }catch (Exception e){
             e.printStackTrace();
         }

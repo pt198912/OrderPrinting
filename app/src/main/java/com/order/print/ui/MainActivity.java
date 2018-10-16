@@ -10,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jiangdg.keepappalive.receiver.ScreenReceiverUtil;
 import com.jiangdg.keepappalive.service.DaemonService;
@@ -24,22 +25,30 @@ import com.order.print.bean.Order;
 import com.order.print.bean.OrderAddr;
 import com.order.print.bean.OrderItem;
 import com.order.print.biz.BluetoothBiz;
+import com.order.print.biz.BluetoothInfoManager;
 import com.order.print.biz.OrderPrintBiz;
 import com.order.print.database.DbManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponse;
 import com.order.print.net.MyResponseCallback;
+import com.order.print.player.VoicePlayerManager;
 import com.order.print.service.OrderJobService;
+import com.order.print.service.PrintService;
 import com.order.print.threadpool.CustomThreadPool;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.order.print.player.VoicePlayerManager.VOICE_BLUE_DISCONN;
+import static com.order.print.player.VoicePlayerManager.VOICE_NEW_ORDER;
 
 public class MainActivity extends AppCompatActivity {
     //    @BindView(R.id.tv_search_bluetooth)
@@ -52,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
     TextView tvStartBluetooth;
     @BindView(R.id.tv_order_his_list)
     TextView tvOrderHisList;
+    @BindView(R.id.tv_test_print)
+    TextView tvTestPrint;
+    @BindView(R.id.tv_new_order)
+    TextView tvNewOrder;
     //    @BindView(R.id.tv_stop_bluetooth)
 //    TextView tvStopBluetooth;
     // JobService，执行系统任务
@@ -67,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     PopupWindow pw;
     ProgressDialog pdConnect;
     private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,52 +99,53 @@ public class MainActivity extends AppCompatActivity {
 
 
         initBluetoothBiz();
+//        startTimer();
 //        addDbDataForTest();
-        updateData();
+//        updateData();
     }
 
-    private void updateData(){
+    private void updateData() {
 //        for(int i=481;i<=487;i++) {
-            HttpUtils.resetOrderStatus("848", "0", new MyResponseCallback<MyResponse>() {
-                @Override
-                public void onSuccess(MyResponse data) {
+        HttpUtils.resetOrderStatus("847", "0", new MyResponseCallback<MyResponse>() {
+            @Override
+            public void onSuccess(MyResponse data) {
 
-                }
+            }
 
-                @Override
-                public void onSuccessList(List<MyResponse> data) {
-                    Log.d(TAG, "onSuccessList: ");
-                }
+            @Override
+            public void onSuccessList(List<MyResponse> data) {
+                Log.d(TAG, "onSuccessList: ");
+            }
 
-                @Override
-                public void onFailure(MyException e) {
-                    Log.d(TAG, "onFailure: ");
-                }
-            }, MyResponse.class);
+            @Override
+            public void onFailure(MyException e) {
+                Log.d(TAG, "onFailure: ");
+            }
+        }, MyResponse.class);
 //        }
     }
 
-    private void addDbDataForTest(){
+    private void addDbDataForTest() {
         CustomThreadPool.getInstance().submit(new Runnable() {
             @Override
             public void run() {
                 Log.d("pengtao", "run: ");
-                for(int i=0;i<20;i++){
-                    Order o=new Order();
-                    o.setOrder_id(123+i);
-                    OrderAddr addr=new OrderAddr();
-                    addr.setAddr("asdsa"+i);
-                    addr.setMobile("123"+i);
-                    addr.setName("pt"+i);
-                    addr.setOrderId(123+i);
+                for (int i = 0; i < 20; i++) {
+                    Order o = new Order();
+                    o.setOrder_id(123 + i);
+                    OrderAddr addr = new OrderAddr();
+                    addr.setAddr("asdsa" + i);
+                    addr.setMobile("123" + i);
+                    addr.setName("pt" + i);
+                    addr.setOrderId(123 + i);
                     o.setAddr(addr);
                     o.setCreate_time(124);
-                    List<OrderItem> items=new ArrayList<>();
-                    for(int j=0;j<3;j++){
-                        OrderItem item=new OrderItem();
-                        item.setName("item"+j);
+                    List<OrderItem> items = new ArrayList<>();
+                    for (int j = 0; j < 3; j++) {
+                        OrderItem item = new OrderItem();
+                        item.setName("item" + j);
                         item.setNum(j);
-                        item.setOrderId(123+i);
+                        item.setOrderId(123 + i);
                         items.add(item);
                     }
                     o.setItems(items);
@@ -190,14 +205,62 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private Order createNewOrder(int i){
+        Order o = new Order();
+        o.setOrder_id(123 + i);
+        OrderAddr addr = new OrderAddr();
+        addr.setAddr("asdsa" + i);
+        addr.setMobile("123" + i);
+        addr.setName("pt" + i);
+        addr.setOrderId(123 + i);
+        o.setAddr(addr);
+        o.setCreate_time(124);
+        List<OrderItem> items = new ArrayList<>();
+        for (int j = 0; j < 3; j++) {
+            OrderItem item = new OrderItem();
+            item.setName("item" + j);
+            item.setNum(j);
+            item.setOrderId(123 + i);
+            items.add(item);
+        }
+        o.setItems(items);
+        return o;
+    }
 
+    private Timer mTimer;
+    private void startTimer(){
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+        mTimer=new Timer();
+        TimerTask task=new TimerTask() {
+            @Override
+            public void run() {
+//                OrderPrintBiz.getInstance().addNewOrder(createNewOrder(1));
+                VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
+                VoicePlayerManager.getInstance().playVoice(VOICE_NEW_ORDER);
+            }
+        };
+        mTimer.schedule(task,0,300);
+    }
 
-    @OnClick({R.id.tv_setting, R.id.tv_order_list, R.id.tv_start_bluetooth})
+    @OnClick({R.id.tv_setting, R.id.tv_order_list, R.id.tv_start_bluetooth,R.id.tv_test_print,R.id.tv_new_order})
     public void onViewClicked(View view) {
         switch (view.getId()) {
 //            case R.id.tv_search_bluetooth:
 //                IntentUtils.startActivity(this, BluetoothDeviceListActivity.class);
 //                break;
+            case R.id.tv_test_print:
+                if(BluetoothInfoManager.getInstance().getConnectedBluetooth()==null||!BluetoothInfoManager.getInstance().isConnected()){
+                    VoicePlayerManager.getInstance().playVoice(VOICE_BLUE_DISCONN);
+                    Toast.makeText(this, "蓝牙未连接", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                OrderPrintBiz.getInstance().addNewOrder(createNewOrder(0));
+                break;
+            case R.id.tv_new_order:
+//                startTimer();
+                break;
             case R.id.tv_setting:
                 IntentUtils.startActivity(this, SettingActivity.class);
                 break;
@@ -207,8 +270,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.tv_start_bluetooth:
                 if (App.getInstance().isPrintOrderFlag()) {
                     OrderPrintBiz.getInstance().stopPrintService();
+                    tvStartBluetooth.setText("开始服务");
+
                 } else {
                     OrderPrintBiz.getInstance().startPrintService();
+                    tvStartBluetooth.setText("停止服务");
                 }
                 break;
 //            case R.id.tv_stop_bluetooth:
@@ -225,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         // 1. 注册锁屏广播监听器
         mScreenListener = new ScreenReceiverUtil(this);
         mScreenManager = ScreenManager.getScreenManagerInstance(this);
-        mScreenListener.setScreenReceiverListener(mScreenListenerer);
+//        mScreenListener.setScreenReceiverListener(mScreenListenerer);
         // 2. 启动系统任务
         mJobManager = JobSchedulerManager.getJobSchedulerInstance(this);
         mJobManager.startJobScheduler();
@@ -238,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
         startDaemonService();
         //  启动播放音乐Service
         startPlayMusicService();
+        IntentUtils.startService(this, PrintService.class);
     }
 
     private void stopPlayMusicService() {
@@ -272,6 +339,8 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.tv_order_his_list)
     public void onViewClicked() {
-        IntentUtils.startActivity(this,HistoryOrderListActvity.class);
+        IntentUtils.startActivity(this, HistoryOrderListActvity.class);
     }
+
+
 }

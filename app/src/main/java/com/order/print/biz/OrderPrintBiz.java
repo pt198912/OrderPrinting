@@ -15,6 +15,7 @@ import com.order.print.database.DbManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponse;
 import com.order.print.net.MyResponseCallback;
+import com.order.print.player.VoicePlayerManager;
 import com.order.print.threadpool.CustomThreadPool;
 import com.order.print.util.HttpUtils;
 
@@ -29,6 +30,8 @@ import am.util.printer.PrintExecutor;
 import am.util.printer.PrintSocketHolder;
 import am.util.printer.PrinterWriter;
 import am.util.printer.PrinterWriter58mm;
+
+import static com.order.print.player.VoicePlayerManager.VOICE_NEW_ORDER;
 
 /**
  * Created by pt198 on 04/09/2018.
@@ -168,6 +171,8 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
 
                             @Override
                             public void onFailure(MyException e) {
+                                Log.d(TAG, "onFailure: ");
+                                mDatas.removeAll(mPrintingList);
                                 synchronized (mPrintTh) {
                                     mPrintTh.notifyAll();
                                 }
@@ -179,24 +184,28 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                 break;
             case PrintSocketHolder.ERROR_1:
 //                dialog.setState(R.string.printer_result_message_2);
-                break;
+                
             case PrintSocketHolder.ERROR_2:
 //                dialog.setState(R.string.printer_result_message_3);
-                break;
+               
             case PrintSocketHolder.ERROR_3:
 //                dialog.setState(R.string.printer_result_message_4);
-                break;
+               
             case PrintSocketHolder.ERROR_4:
 //                dialog.setState(R.string.printer_result_message_5);
-                break;
+                
             case PrintSocketHolder.ERROR_5:
 //                dialog.setState(R.string.printer_result_message_6);
-                break;
+                
             case PrintSocketHolder.ERROR_6:
 //                dialog.setState(R.string.printer_result_message_7);
-                break;
+                
             case PrintSocketHolder.ERROR_100:
 //                dialog.setState(R.string.printer_result_message_8);
+                Log.d(TAG, "onResult: print error");
+                synchronized (mPrintTh) {
+                    mPrintTh.notifyAll();
+                }
                 break;
         }
     }
@@ -225,6 +234,11 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         this.mDatas.addAll(0,orders);
     }
 
+    public void addNewOrder(Order order){
+        this.mDatas.add(0,order);
+        Log.d(TAG, "addNewOrder: ");
+    }
+
     private Timer mTimer;
     private void startTimer(){
         if(mTimer!=null){
@@ -237,7 +251,9 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        getOrderList();
+                        if(App.getInstance().isPrintOrderFlag()) {
+                            getOrderList();
+                        }
                     }
                 });
 
@@ -256,17 +272,49 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
     }
     @Override
     public void onSuccess(QueryOrderResult data) {
-        mDatas.clear();
         try {
             Log.d(TAG, "onSuccess: " + data.getData().size());
         }catch (Exception e){
             e.printStackTrace();
         }
         if(mHistoryOrders!=null){
-            mDatas.addAll(mHistoryOrders);
+            addDataNoRepeat(true,mHistoryOrders);
+            Log.d(TAG, "addDataNoRepeat(mHistoryOrders): "+mDatas.size());
+//            mDatas.addAll(mHistoryOrders);
         }
-        mDatas.addAll(data.getData());
+        int lastSize=mDatas.size();
+        if(data!=null&&data.getData()!=null){
+            addDataNoRepeat(false,data.getData());
+            Log.d(TAG, "addDataNoRepeat(data.getData()): "+mDatas.size());
+//            mDatas.addAll(data.getData());
+        }
 
+        if(mDatas.size()>lastSize){
+            // has new order,play new order's music
+            Log.d(TAG, "onSuccess: playVoice VOICE_NEW_ORDER");
+            VoicePlayerManager.getInstance().playVoice(VOICE_NEW_ORDER);
+        }
+
+    }
+     private void addDataNoRepeat(boolean userAdded,List<Order> orders) {
+        for (Order order : orders) {
+            boolean exist = false;
+            for (int i = 0; i < mDatas.size(); i++) {
+                Order origin = mDatas.get(i);
+                if (order.getOrder_id() == origin.getOrder_id()) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                Log.d(TAG, "addDataNoRepeat: ");
+                if(userAdded) {
+                    mDatas.add(0,order);
+                }else{
+                    mDatas.add(order);
+                }
+            }
+        }
     }
 
     @Override

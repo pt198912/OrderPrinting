@@ -12,6 +12,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.order.print.R;
 import com.order.print.bean.Order;
@@ -83,6 +84,7 @@ public class HistoryOrderListActvity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 OrderPrintBiz.getInstance().addHistoryOrderList(mDatas);
+                Toast.makeText(HistoryOrderListActvity.this, "已添加到打印队列", Toast.LENGTH_SHORT).show();
             }
         });
         mAdapter=new OrderListAdapter();
@@ -131,8 +133,12 @@ public class HistoryOrderListActvity extends BaseActivity {
             } else {
                 holder = (ViewHolder) view.getTag();
             }
-            holder.tvCount.setText(mDatas.get(i).getItems().size() + "");
-            holder.tvDate.setText(sdf.format(new Date(mDatas.get(i).getCreate_time())));
+            int count=0;
+            for(int j=0;j<mDatas.get(i).getItems().size();j++){
+                count+=mDatas.get(i).getItems().get(j).getNum();
+            }
+            holder.tvCount.setText(count + "");
+            holder.tvDate.setText(sdf.format(new Date(mDatas.get(i).getCreate_time()*1000)));
             holder.tvOrderNo.setText(mDatas.get(i).getOrder_id() + "");
             holder.userName.setText(mDatas.get(i).getAddr().getName());
             return view;

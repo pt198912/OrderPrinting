@@ -108,6 +108,7 @@ public class DbManager {
         if(c!=null&&c.moveToNext()){
             OrderAddr addr=new OrderAddr();
             addr.setName(c.getString(c.getColumnIndex("name")));
+            Log.d(TAG, "queryAddr:name "+addr.getName());
             addr.setMobile(c.getString(c.getColumnIndex("mobile")));
             addr.setAddr(c.getString(c.getColumnIndex("addr")));
             addr.setOrderId(c.getInt(c.getColumnIndex("order_id")));

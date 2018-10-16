@@ -154,7 +154,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
                     pdConnect.setCanceledOnTouchOutside(false);
                     pdConnect.show();
                     BluetoothBiz.getInstance().stopReconn();
-                    BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
+//                    BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(device);
 //                    finish();
@@ -167,7 +167,7 @@ public class BluetoothDeviceListActivity extends BaseActivity implements Bluetoo
 //                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothBiz.getInstance().stopReconn();
                     BluetoothBiz.getInstance().bond(mBluetoothList.get(position).mBluetoothDevice);
-                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
+//                    BluetoothBiz.getInstance().connect(mBluetoothList.get(position).mBluetoothDevice);
                     BluetoothInfoManager.getInstance().setConnectedBluetooth(mBluetoothList.get(position).mBluetoothDevice);
 
                 }

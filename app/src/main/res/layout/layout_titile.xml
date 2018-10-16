@@ -31,6 +31,8 @@
         android:layout_gravity="right|center_vertical"
         android:text=""
         android:textSize="19sp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:layout_marginRight="15dp"/>
 </FrameLayout>
     <View android:layout_width="match_parent"

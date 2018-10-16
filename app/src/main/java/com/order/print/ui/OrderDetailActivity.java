@@ -2,22 +2,22 @@ package com.order.print.ui;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.order.print.R;
 import com.order.print.bean.Order;
 import com.order.print.bean.OrderItem;
-import com.order.print.biz.BluetoothBiz;
 import com.order.print.biz.OrderPrintBiz;
 import com.order.print.util.ScreenUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,8 +35,6 @@ public class OrderDetailActivity extends BaseActivity {
     TextView tvTitle;
     @BindView(R.id.iv_right)
     ImageView ivRight;
-    @BindView(R.id.tv_right)
-    TextView tvRight;
     @BindView(R.id.tv_name)
     TextView tvName;
     @BindView(R.id.tv_phone)
@@ -53,8 +51,12 @@ public class OrderDetailActivity extends BaseActivity {
     TextView tvDistributionFees;
     @BindView(R.id.tv_favourable)
     TextView tvFavourable;
+    @BindView(R.id.tv_right)
+    TextView tvRight;
     private Order mOrder;
     private boolean mHistoryFlag;
+    private static final String TAG = "OrderDetailActivity";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,42 +68,37 @@ public class OrderDetailActivity extends BaseActivity {
 
     private void getIntntData() {
         mOrder = (Order) getIntent().getSerializableExtra("extra");
-        mHistoryFlag=getIntent().getBooleanExtra("extra1",false);
+        mHistoryFlag = getIntent().getBooleanExtra("extra1", false);
     }
-    private void initView(){
+
+    private void initView() {
         tvTitle.setText("订单详情");
 
-        if(mHistoryFlag){
+        if (mHistoryFlag) {
             tvRight.setVisibility(View.VISIBLE);
             tvRight.setText("打印");
-        }else{
+
+        } else {
             tvRight.setVisibility(View.GONE);
         }
-        tvRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<Order> orders=new ArrayList<Order>();
-                OrderPrintBiz.getInstance().addHistoryOrderList(orders);
-            }
-        });
-        for(int i=0;i<mOrder.getItems().size();i++){
-            OrderItem item=mOrder.getItems().get(i);
-            View content=LayoutInflater.from(this).inflate(R.layout.goods_item,null);
-            TextView name=content.findViewById(R.id.tv_goods_name);
-            TextView num=content.findViewById(R.id.tv_goods_num);
-            TextView total=content.findViewById(R.id.tv_goods_total_money);
+        for (int i = 0; i < mOrder.getItems().size(); i++) {
+            OrderItem item = mOrder.getItems().get(i);
+            View content = LayoutInflater.from(this).inflate(R.layout.goods_item, null);
+            TextView name = content.findViewById(R.id.tv_goods_name);
+            TextView num = content.findViewById(R.id.tv_goods_num);
+            TextView total = content.findViewById(R.id.tv_goods_total_money);
             name.setText(item.getName());
-            num.setText("X"+item.getNum());
-            total.setText("￥"+item.getTotal_price());
-            llGoods.addView(content,new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ScreenUtils.dip2px(this,48)));
+            num.setText("X" + item.getNum());
+            total.setText("￥" + item.getTotal_price());
+            llGoods.addView(content, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ScreenUtils.dip2px(this, 48)));
         }
         tvName.setText(mOrder.getAddr().getName());
         tvPhone.setText(mOrder.getAddr().getMobile());
         tvAddr.setText(mOrder.getAddr().getAddr());
-        tvTotalNum.setText("￥"+mOrder.getNeed_pay()+"");
-        tvTableware.setText("￥"+mOrder.getCj_money()+"");
-        tvDistributionFees.setText("￥"+mOrder.getLogistics());
-        tvFavourable.setText("￥"+mOrder.getFull_reduce_price());
+        tvTotalNum.setText("￥" + mOrder.getNeed_pay() + "");
+        tvTableware.setText("￥" + mOrder.getCj_money() + "");
+        tvDistributionFees.setText("￥" + mOrder.getLogistics());
+        tvFavourable.setText("￥" + mOrder.getFull_reduce_price());
     }
 
     @OnClick({R.id.iv_back, R.id.tv_right})
@@ -111,10 +108,14 @@ public class OrderDetailActivity extends BaseActivity {
                 finish();
                 break;
             case R.id.tv_right:
-                List<Order> orders=new ArrayList<>();
+                Log.d(TAG, "onViewClicked: addHistoryOrderList");
+                List<Order> orders = new ArrayList<>();
                 orders.add(mOrder);
                 OrderPrintBiz.getInstance().addHistoryOrderList(orders);
+                Toast.makeText(this, "已添加到打印队列", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
+
+
 }
