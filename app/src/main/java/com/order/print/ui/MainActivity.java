@@ -35,6 +35,7 @@ import com.order.print.player.VoicePlayerManager;
 import com.order.print.service.OrderJobService;
 import com.order.print.service.PrintService;
 import com.order.print.threadpool.CustomThreadPool;
+import com.order.print.util.DesUtils;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
 
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             startOrderJobServiceAboveM();
         }
 
-
+        DesUtils.test();
         initBluetoothBiz();
 //        startTimer();
 //        addDbDataForTest();

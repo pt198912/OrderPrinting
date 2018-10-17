@@ -102,8 +102,7 @@ public class OrderContentProvider extends ContentProvider {
             case ORDER_URI_CODE:
             case ORDER_ITEM_URI_CODE:
             case ADDR_URI_CODE:
-                selection=null;
-                selectionArgs=null;
+
                 break;
             case ORDER_URI_CODE_SINGLE:
             case ORDER_ITEM_URI_CODE_SINGLE:

@@ -91,7 +91,7 @@
                 android:background="@drawable/edit_bg_01"
                 android:scaleType="centerInside"
                 android:src="@mipmap/login2_display"
-                android:visibility="invisible"/>
+                android:visibility="visible"/>
 
         </LinearLayout>
 

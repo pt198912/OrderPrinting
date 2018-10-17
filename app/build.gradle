@@ -10,6 +10,15 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            //根据需要 自行选择添加的对应cpu类型的.so库。
+            abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+            // 还可以添加 'x86', 'x86_64', 'mips', 'mips64'
+        }
+        manifestPlaceholders = [
+                MTA_APPKEY:"AP367IATT6UJ",
+                MTA_CHANNEL:"orderprint"
+        ]
     }
     buildTypes {
         release {
@@ -45,4 +54,14 @@ dependencies {
     compile 'org.greenrobot:greendao-generator:3.2.2'
 //    debugImplementation 'com.amitshekhar.android:debug-db:1.0.4'
     implementation 'com.facebook.stetho:stetho:1.5.0'
+    // mta包稳定版和测试版本二选一，mid包必须要添加 ，可视化埋点根据需要添加
+
+//mta 3.4.7 稳定版
+    compile 'com.qq.mta:mta:3.4.7-release'
+
+//mid jar包 必须添加
+    compile 'com.tencent.mid:mid:4.06-Release'
+
+//可视化埋点的相关jar包 （根据需要添加），可视化埋点的版本号，和必须和当前MTA的版本号必须匹配使用 需要在配置文件中增加配置，具体请参考 高级功能中可视化埋点的接入。
+    compile 'com.qq.visual:visual:3.4.0.1-beta'
 }

@@ -67,21 +67,30 @@ public class VoicePlayerManager {
 
     private void play(Context context, int resId){
         try {
-            Log.d(TAG, "play: ");
-            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                mMediaPlayer.stop();
-            }
-            if (mMediaPlayer != null) {
-                mMediaPlayer.release();
-            }
-            Log.d(TAG, "MediaPlayer.create: ");
-            mMediaPlayer = MediaPlayer.create(context, resId);
-            AudioManager am=(AudioManager)App.getInstance().getSystemService(Context.AUDIO_SERVICE);
-            int maxVolume=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-            am.setStreamVolume(AudioManager.STREAM_MUSIC,maxVolume,AudioManager.FLAG_PLAY_SOUND);
+            if(App.getInstance().isPrintOrderFlag()) {
+                Log.d(TAG, "play: ");
+                if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.stop();
+                }
+                if (mMediaPlayer != null) {
+                    mMediaPlayer.release();
+                }
+                Log.d(TAG, "MediaPlayer.create: ");
+                mMediaPlayer = MediaPlayer.create(context, resId);
+                final AudioManager am = (AudioManager) App.getInstance().getSystemService(Context.AUDIO_SERVICE);
+                final int currentVolume=am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_PLAY_SOUND);
 //            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.start();
+                mMediaPlayer.start();
+                mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        am.setStreamVolume(AudioManager.STREAM_MUSIC, currentVolume, AudioManager.FLAG_PLAY_SOUND);
+                    }
+                });
 //            mMediaPlayer.setVolume(1.0f,1.0f);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

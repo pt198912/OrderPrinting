@@ -16,6 +16,8 @@ import com.order.print.receiver.Receiver2;
 import com.order.print.service.OrderJobService;
 import com.order.print.service.Service2;
 import com.order.print.util.HttpUtils;
+import com.tencent.stat.MtaSDkException;
+import com.tencent.stat.StatService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,6 +72,19 @@ public class App extends Application {
         setUncaughtExceptionHandler();
         getAppConfig();
         Stetho.initializeWithDefaults(this);
+        initMta();
+    }
+
+    private void initMta(){
+        try {
+            // 第三个参数必须为：com.tencent.stat.common.StatConstants.VERSION
+            StatService.startStatService(this, "AP367IATT6UJ",
+                    com.tencent.stat.common.StatConstants.VERSION);
+            Log.d("MTA","MTA初始化成功");
+        } catch (MtaSDkException e) {
+            // MTA初始化失败
+            Log.d("MTA","MTA初始化失败"+e);
+        }
     }
 
     private void getAppConfig(){

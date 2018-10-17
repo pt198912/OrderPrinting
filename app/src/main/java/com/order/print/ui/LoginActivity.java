@@ -3,8 +3,9 @@ package com.order.print.ui;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.InputType;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,7 +46,9 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
     TextView loginForgetpwd;
     private String name;
     private String pwd;
+    private boolean displayPwd = true;
     private static final String TAG = "LoginActivity";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,9 +57,9 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
         initView();
     }
 
-    private void initView(){
-        String phone= UserInfoManager.getInstance().getName();
-        if(!TextUtils.isEmpty(phone)) {
+    private void initView() {
+        String phone = UserInfoManager.getInstance().getName();
+        if (!TextUtils.isEmpty(phone)) {
             loginEtPhone.setText(phone);
         }
     }
@@ -67,7 +70,7 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
         UserInfoManager.getInstance().setName(name);
         UserInfoManager.getInstance().setPwd(pwd);
         UserInfoManager.getInstance().setToken(data.getToken());
-        IntentUtils.startActivity(this,MainActivity.class);
+        IntentUtils.startActivity(this, MainActivity.class);
     }
 
     @Override
@@ -84,26 +87,46 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
     @Override
     public void onFailure(MyException e) {
         DialogUtils.dissLoad();
-        Toast.makeText(this, "登录失败，"+e.getMsg(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "登录失败，" + e.getMsg(), Toast.LENGTH_SHORT).show();
     }
 
-    private void login(String name,String pwd) {
-        HttpUtils.login(name,pwd,this,LoginBean.class);
+    private void login(String name, String pwd) {
+        HttpUtils.login(name, pwd, this, LoginBean.class);
     }
 
-    @OnClick(R.id.login_login)
-    public void onViewClicked() {
-        name=loginEtPhone.getText().toString();
-        pwd=loginEtPswd.getText().toString();
-        if(TextUtils.isEmpty(name)){
-            Toast.makeText(this, "用户名不能为空", Toast.LENGTH_SHORT).show();
-            return;
+    @OnClick({R.id.login_login,R.id.login_iv_display})
+    public void onViewClicked(View v) {
+        switch (v.getId()) {
+            case R.id.login_login:
+                name = loginEtPhone.getText().toString();
+                pwd = loginEtPswd.getText().toString();
+                if (TextUtils.isEmpty(name)) {
+                    Toast.makeText(this, "用户名不能为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (TextUtils.isEmpty(pwd)) {
+                    Toast.makeText(this, "密码不能为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                DialogUtils.loading(this, "");
+                login(name, pwd);
+                break;
+            case R.id.login_iv_display:
+                if (displayPwd) {
+                    //明文显示
+                    loginEtPswd.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    displayPwd = false;
+                    loginIvDisplay.setImageResource(R.mipmap.login2_display);
+                } else {
+                    //暗文显示
+                    loginEtPswd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    displayPwd = true;
+                    loginIvDisplay.setImageResource(R.mipmap.login2_hide);
+                }
+                loginEtPswd.setSelection(loginEtPswd.getText().length());
+                break;
         }
-        if(TextUtils.isEmpty(pwd)){
-            Toast.makeText(this, "密码不能为空", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        DialogUtils.loading(this,"");
-        login(name,pwd);
     }
+
+
 }

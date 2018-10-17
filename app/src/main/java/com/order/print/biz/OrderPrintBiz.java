@@ -3,6 +3,7 @@ package com.order.print.biz;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,6 +11,7 @@ import com.gprinter.aidl.GpService;
 //import com.gprinter.aidl.GpService;
 import com.order.print.App;
 import com.order.print.bean.Order;
+import com.order.print.bean.OrderItem;
 import com.order.print.bean.QueryOrderResult;
 import com.order.print.database.DbManager;
 import com.order.print.net.MyException;
@@ -18,6 +20,7 @@ import com.order.print.net.MyResponseCallback;
 import com.order.print.player.VoicePlayerManager;
 import com.order.print.threadpool.CustomThreadPool;
 import com.order.print.util.HttpUtils;
+import com.order.print.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,12 +50,22 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
     private int type = PrinterWriter58mm.TYPE_58;
     private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
     private static final String TAG = "OrderPrintBiz";
-
+    private static final int MSG_GET_ORDERS=0x897;
     private static class SingletonInstance{
         private static final OrderPrintBiz INSTANCE=new OrderPrintBiz();
     }
     private OrderPrintBiz(){
-        mHandler=new Handler();
+        mHandler=new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case MSG_GET_ORDERS:
+                        getOrderList();
+                        break;
+                }
+            }
+        };
     }
 
     public List<Order> getDatas() {
@@ -62,7 +75,8 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
 
     public void init(){
 //        bindService();
-        startTimer();
+//        startTimer();
+        getOrderList();
         startPrintTask();
     }
     public void release(){
@@ -115,8 +129,10 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         Log.d(TAG, "onResult: " + errorCode);
         switch (errorCode) {
             case PrintSocketHolder.ERROR_0:
+
                 if(mPrintingList.size()>0) {
-                    Order order=mPrintingList.get(0);
+                    final Order order=mPrintingList.get(0);
+                    LogUtil.logPrintInfo(order);
                     boolean isHistory=false;
                     for(int i=0;i<mHistoryOrders.size();i++){
                         if(mHistoryOrders.get(i).getOrder_id()==order.getOrder_id()){
@@ -148,7 +164,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                         HttpUtils.updateOrderStatus(order.getOrder_id() + "", "1", new MyResponseCallback<MyResponse>() {
                             @Override
                             public void onSuccess(MyResponse data) {
-
+                                LogUtil.logUpdateOrder(order);
                             }
 
                             @Override
@@ -158,6 +174,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                                     public void run() {
                                         Log.d(TAG, "run: insertOrder");
                                         DbManager.getInstance().insertOrder(mPrintingList);
+                                        LogUtil.logAddHistiryOrder(order);
                                     }
                                 });
 
@@ -286,6 +303,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         if(data!=null&&data.getData()!=null){
             addDataNoRepeat(false,data.getData());
             Log.d(TAG, "addDataNoRepeat(data.getData()): "+mDatas.size());
+
 //            mDatas.addAll(data.getData());
         }
 
@@ -294,7 +312,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
             Log.d(TAG, "onSuccess: playVoice VOICE_NEW_ORDER");
             VoicePlayerManager.getInstance().playVoice(VOICE_NEW_ORDER);
         }
-
+        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
      private void addDataNoRepeat(boolean userAdded,List<Order> orders) {
         for (Order order : orders) {
@@ -306,6 +324,11 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
                     break;
                 }
             }
+            for(int i=0;i<order.getItems().size();i++){
+                OrderItem item=order.getItems().get(i);
+                item.setOrderId(order.getOrder_id());
+            }
+            order.getAddr().setOrderId(order.getOrder_id());
             if (!exist) {
                 Log.d(TAG, "addDataNoRepeat: ");
                 if(userAdded) {
@@ -326,6 +349,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
     public void onFailure(MyException e) {
 
         Toast.makeText(App.getInstance(), "查询订单失败", Toast.LENGTH_SHORT).show();
+        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
 
     public void startPrintService(){

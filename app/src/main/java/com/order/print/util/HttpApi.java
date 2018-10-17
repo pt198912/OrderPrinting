@@ -11,4 +11,5 @@ public class HttpApi {
     public static final String UPDATE_ORDER = BASE_URL + "order/oprint";
     public static final String RESET_ORDER_STATUS = BASE_URL + "order/reprint?id=";
     public static final String GET_APP_CONFIG="http://fjhaoshi.test.yiqianye.vip/upload/print/Config/androidApp.json";
+    public static final String POST_LOG="";
 }

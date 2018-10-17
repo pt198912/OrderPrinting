@@ -79,14 +79,14 @@ public class HistoryOrderListActvity extends BaseActivity {
     private void initView() {
         tvTitle.setText("历史订单");
         tvRight.setVisibility(View.VISIBLE);
-        tvRight.setText("打印");
-        tvRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                OrderPrintBiz.getInstance().addHistoryOrderList(mDatas);
-                Toast.makeText(HistoryOrderListActvity.this, "已添加到打印队列", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        tvRight.setText("打印");
+//        tvRight.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                OrderPrintBiz.getInstance().addHistoryOrderList(mDatas);
+//                Toast.makeText(HistoryOrderListActvity.this, "已添加到打印队列", Toast.LENGTH_SHORT).show();
+//            }
+//        });
         mAdapter=new OrderListAdapter();
         lvHis.setAdapter(mAdapter);
         lvHis.setOnItemClickListener(new AdapterView.OnItemClickListener() {

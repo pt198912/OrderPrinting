@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -80,6 +82,8 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     UpdateConnStateRecevier mReceiver;
     private int type = PrinterWriter58mm.TYPE_58;
     private int height = PrinterWriter.HEIGHT_PARTING_DEFAULT;
+    private Handler mHandler;
+    private static final int MSG_GET_ORDERS=0x897;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,9 +92,21 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         ButterKnife.bind(this);
         initView();
         DialogUtils.loading(this, "");
-        startTimer();
+//        startTimer();
+        getOrderList();
         registeReceiver();
 //        startPrintTask();
+        mHandler=new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what){
+                    case MSG_GET_ORDERS:
+                        getOrderList();
+                        break;
+                }
+            }
+        };
     }
 
     private void registeReceiver(){
@@ -306,6 +322,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         mDatas.clear();
         mDatas.addAll(data.getData());
         mAdapter.notifyDataSetChanged();
+        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
 
     @Override
@@ -318,6 +335,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         DialogUtils.dissLoad();
 //        Toast.makeText(this, "查询订单失败", Toast.LENGTH_SHORT).show();
         smartRefreshLayout.finishRefresh();
+        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
 
     @OnClick({R.id.iv_back,R.id.tv_right})
@@ -370,6 +388,9 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         DialogUtils.dissLoad();
         if(mTimer!=null){
             mTimer.cancel();
+        }
+        if(mHandler!=null){
+            mHandler.removeMessages(MSG_GET_ORDERS);
         }
         unregisterReceiver(mReceiver);
     }
