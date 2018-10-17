@@ -123,6 +123,11 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         };
         mPrintTh.start();
     }
+    private List<Order> mServerOrders=new ArrayList<>();
+
+    public List<Order> getServerOrders() {
+        return mServerOrders;
+    }
 
     @Override
     public void onResult(int errorCode) {
@@ -287,6 +292,15 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         Log.d(TAG, "getOrderList: ");
         HttpUtils.queryOrderPage(this, QueryOrderResult.class);
     }
+    private OnFetchServerOrderListener mFetchServerOrderListener;
+
+    public void setFetchServerOrderListener(OnFetchServerOrderListener fetchServerOrderListener) {
+        this.mFetchServerOrderListener = fetchServerOrderListener;
+    }
+
+    public interface OnFetchServerOrderListener{
+        void onFetchOrderSuccess();
+    }
     @Override
     public void onSuccess(QueryOrderResult data) {
         try {
@@ -299,8 +313,13 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
             Log.d(TAG, "addDataNoRepeat(mHistoryOrders): "+mDatas.size());
 //            mDatas.addAll(mHistoryOrders);
         }
+        mServerOrders.clear();
         int lastSize=mDatas.size();
         if(data!=null&&data.getData()!=null){
+            mServerOrders.addAll(data.getData());
+            if(mFetchServerOrderListener!=null){
+                mFetchServerOrderListener.onFetchOrderSuccess();
+            }
             addDataNoRepeat(false,data.getData());
             Log.d(TAG, "addDataNoRepeat(data.getData()): "+mDatas.size());
 

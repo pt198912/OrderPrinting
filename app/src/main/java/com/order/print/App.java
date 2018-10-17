@@ -70,7 +70,7 @@ public class App extends Application {
         sInstance=this;
         initXUtils();
         setUncaughtExceptionHandler();
-        getAppConfig();
+//        getAppConfig();
         Stetho.initializeWithDefaults(this);
         initMta();
     }
@@ -87,26 +87,6 @@ public class App extends Application {
         }
     }
 
-    private void getAppConfig(){
-        HttpUtils.getAppConfig(new MyResponseCallback<AppConfig>() {
-            @Override
-            public void onSuccess(AppConfig data) {
-                if(data!=null) {
-                    setQueryOrderDuration((int) data.getApiInterval());
-                }
-            }
-
-            @Override
-            public void onSuccessList(List<AppConfig> data) {
-
-            }
-
-            @Override
-            public void onFailure(MyException e) {
-                Log.d(TAG, "onFailure: "+e.getMessage());
-            }
-        },AppConfig.class);
-    }
 
     private void setUncaughtExceptionHandler(){
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

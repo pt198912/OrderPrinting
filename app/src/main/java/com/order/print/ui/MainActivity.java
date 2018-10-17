@@ -1,7 +1,12 @@
 package com.order.print.ui;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.drm.ProcessedData;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +25,7 @@ import com.jiangdg.keepappalive.utils.JobSchedulerManager;
 import com.jiangdg.keepappalive.utils.ScreenManager;
 import com.order.print.App;
 import com.order.print.R;
+import com.order.print.bean.AppConfig;
 import com.order.print.bean.BluetoothBean;
 import com.order.print.bean.Order;
 import com.order.print.bean.OrderAddr;
@@ -27,6 +33,7 @@ import com.order.print.bean.OrderItem;
 import com.order.print.biz.BluetoothBiz;
 import com.order.print.biz.BluetoothInfoManager;
 import com.order.print.biz.OrderPrintBiz;
+import com.order.print.biz.UpdateApk;
 import com.order.print.database.DbManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyResponse;
@@ -39,7 +46,12 @@ import com.order.print.util.DesUtils;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -92,18 +104,97 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvStartBluetooth.setText("开始服务");
         }
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            startOrderJobServiceBelowM();
-        } else {
-            startOrderJobServiceAboveM();
-        }
+        getAppConfig();
 
-        DesUtils.test();
-        initBluetoothBiz();
+//        DesUtils.test1();
+
 //        startTimer();
 //        addDbDataForTest();
 //        updateData();
     }
+    AlertDialog mDlg;
+    private String mExpireTime="2018-11-17 00:00:00";
+    private void getAppConfig(){
+        final ProgressDialog dlg=showLoadingDlg();
+        dlg.setCancelable(false);
+        HttpUtils.getAppConfig(new MyResponseCallback<AppConfig>() {
+            @Override
+            public void onSuccess(final AppConfig data) {
+                dlg.dismiss();
+                if(data!=null) {
+                    App.getInstance().setQueryOrderDuration((int) data.getApiInterval());
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date date =null;
+                    try {
+                        date=(Date) sdf.parse(mExpireTime);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, "onSuccess: date "+date.getTime()+","+System.currentTimeMillis());
+                    if(date!=null&&date.getTime()<=System.currentTimeMillis()){
+                        mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("软件试用期结束，请联系管理员").setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                                System.exit(0);
+                            }
+                        }).show();
+                        mDlg.setCancelable(false);
+                        return;
+                    }
+                    PackageInfo packageInfo= null;
+                    try {
+                        packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
+                        int versionCode=packageInfo.versionCode;
+                        Log.d(TAG, "onSuccess: versionCOde "+versionCode+","+data.getUpgrade().getSmallVar()+","+data.getUpgrade().getPackage());
+                        if(data.getUpgrade()!=null){
+                            if(data.getUpgrade().getSmallVar()>versionCode){
+                                mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("有新的版本").setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        UpdateApk apk=new UpdateApk();
+                                        apk.downloadApk(MainActivity.this,data.getUpgrade().getPackage());
+                                    }
+                                }).show();
+                            }
+                        }
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+
+
+                }
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                    startOrderJobServiceBelowM();
+                } else {
+                    startOrderJobServiceAboveM();
+                }
+
+                initBluetoothBiz();
+            }
+
+            @Override
+            public void onSuccessList(List<AppConfig> data) {
+
+            }
+
+            @Override
+            public void onFailure(MyException e) {
+                Log.d(TAG, "onFailure: "+e.getMessage());
+                dlg.dismiss();
+                mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("获取配置失败，程序将在获取配置成功后启动").setPositiveButton("重试", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        getAppConfig();
+                    }
+                }).show();
+                mDlg.setCancelable(false);
+            }
+        },AppConfig.class);
+    }
+
 
     private void updateData() {
 //        for(int i=481;i<=487;i++) {
@@ -165,10 +256,11 @@ public class MainActivity extends AppCompatActivity {
         BluetoothBiz.getInstance().init();
     }
 
-    private void showLoadingDlg() {
+    private ProgressDialog showLoadingDlg() {
         pdSearch = ProgressDialog.show(this, "", "连接中", true, true);
         pdSearch.setCanceledOnTouchOutside(false);
         pdSearch.show();
+        return pdSearch;
     }
 
     private ScreenReceiverUtil.SreenStateListener mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {

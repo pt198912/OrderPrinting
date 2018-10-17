@@ -16,7 +16,7 @@ import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
     public static final String DB_NAME="order_print.db";
-    private static final int DB_VERSION=1;
+    private static final int DB_VERSION=2;
     public DBHelper(Context context){
         this(context,DB_NAME,null,DB_VERSION);
     }

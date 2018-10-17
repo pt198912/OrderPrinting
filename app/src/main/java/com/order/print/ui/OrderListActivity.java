@@ -61,7 +61,7 @@ import butterknife.OnClick;
 
 import static com.order.print.util.Constants.ACTION_UPDATE_CONN_STATE;
 
-public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult>, PrintExecutor.OnPrintResultListener {
+public class OrderListActivity extends BaseActivity implements MyResponseCallback<QueryOrderResult>, PrintExecutor.OnPrintResultListener,OrderPrintBiz.OnFetchServerOrderListener {
     @BindView(R.id.iv_back)
     ImageView ivBack;
     @BindView(R.id.tv_title)
@@ -91,22 +91,22 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         setContentView(R.layout.activity_order_list);
         ButterKnife.bind(this);
         initView();
-        DialogUtils.loading(this, "");
+//        DialogUtils.loading(this, "");
 //        startTimer();
-        getOrderList();
+//        getOrderList();
         registeReceiver();
 //        startPrintTask();
-        mHandler=new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what){
-                    case MSG_GET_ORDERS:
-                        getOrderList();
-                        break;
-                }
-            }
-        };
+//        mHandler=new Handler(){
+//            @Override
+//            public void handleMessage(Message msg) {
+//                super.handleMessage(msg);
+//                switch (msg.what){
+//                    case MSG_GET_ORDERS:
+//                        getOrderList();
+//                        break;
+//                }
+//            }
+//        };
     }
 
     private void registeReceiver(){
@@ -120,6 +120,22 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     public void onBackPressed() {
         super.onBackPressed();
     }
+
+    @Override
+    public void onFetchOrderSuccess() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                List<Order> datas=OrderPrintBiz.getInstance().getServerOrders();
+                mDatas.clear();
+                if(datas!=null&&datas.size()>0){
+                    mDatas.addAll(datas);
+                }
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     private class UpdateConnStateRecevier extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -265,6 +281,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
     private void initView() {
         tvTitle.setText("订单列表");
 //        rightTv.setText("设置");
+        mDatas.addAll(OrderPrintBiz.getInstance().getServerOrders());
         mAdapter = new OrderListAdapter();
         lvOrderList.setAdapter(mAdapter);
         lvOrderList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -293,12 +310,20 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
                 startActivity(blue);
             }
         });
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        OrderPrintBiz.getInstance().setFetchServerOrderListener(this);
         updateBlueConnState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OrderPrintBiz.getInstance().setFetchServerOrderListener(null);
     }
 
     private void updateBlueConnState(){
@@ -322,7 +347,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         mDatas.clear();
         mDatas.addAll(data.getData());
         mAdapter.notifyDataSetChanged();
-        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
+//        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
 
     @Override
@@ -335,7 +360,7 @@ public class OrderListActivity extends BaseActivity implements MyResponseCallbac
         DialogUtils.dissLoad();
 //        Toast.makeText(this, "查询订单失败", Toast.LENGTH_SHORT).show();
         smartRefreshLayout.finishRefresh();
-        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
+//        mHandler.sendEmptyMessageDelayed(MSG_GET_ORDERS,App.getInstance().getQueryOrderDuration());
     }
 
     @OnClick({R.id.iv_back,R.id.tv_right})
