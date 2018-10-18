@@ -1,5 +1,6 @@
 package com.order.print.ui;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -7,8 +8,12 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.drm.ProcessedData;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -45,6 +50,8 @@ import com.order.print.threadpool.CustomThreadPool;
 import com.order.print.util.DesUtils;
 import com.order.print.util.HttpUtils;
 import com.order.print.util.IntentUtils;
+import com.order.print.util.LogUtil;
+import com.order.print.util.Logs;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,10 +63,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import am.example.printer.util.FileUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.order.print.player.VoicePlayerManager.VOICE_BLUE_DISCONN;
 import static com.order.print.player.VoicePlayerManager.VOICE_NEW_ORDER;
 
@@ -104,17 +113,119 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvStartBluetooth.setText("开始服务");
         }
-        getAppConfig();
-
-//        DesUtils.test1();
+        getAppConfig(true);
 
 //        startTimer();
 //        addDbDataForTest();
 //        updateData();
     }
+
+    public boolean checkPermission(AppCompatActivity activity) {
+        boolean isGranted = true;
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+//            if (activity.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES) != PERMISSION_GRANTED) {
+//                isGranted = false;
+//            }
+            if (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+                //如果没有写sd卡权限
+                isGranted = false;
+            }
+            if (activity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
+                isGranted = false;
+            }
+            if (activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
+                isGranted = false;
+            }
+
+            if (!isGranted) {
+                activity.requestPermissions(
+                        new String[]{
+//                                Manifest.permission.INSTALL_PACKAGES,
+                                Manifest.permission.ACCESS_COARSE_LOCATION,
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                                Manifest.permission.READ_PHONE_STATE,
+//                                Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
+//                                Manifest.permission.VIBRATE,
+//                                Manifest.permission.RECORD_AUDIO,
+//                                Manifest.permission.CALL_PHONE,
+
+//                                Manifest.permission.CAMERA
+                        },
+                        102);
+            }else{
+
+                boolean haveInstallPermission = getPackageManager().canRequestPackageInstalls();
+                Log.d(TAG, "checkPermission: haveInstallPermission"+haveInstallPermission);
+                if (haveInstallPermission) {
+                    UpdateApk apk=new UpdateApk();
+                    apk.downloadApk(MainActivity.this,mUpdatePkg);
+                } else {
+                    startInstallPermissionSettingActivity();
+                }
+            }
+        }else{
+            UpdateApk apk=new UpdateApk();
+            apk.downloadApk(MainActivity.this,mUpdatePkg);
+        }
+        return isGranted;
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void startInstallPermissionSettingActivity() {
+        Log.d(TAG, "startInstallPermissionSettingActivity: ");
+        Uri packageURI = Uri.parse("package:" + getPackageName());
+        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, packageURI);
+        startActivityForResult(intent, 103);
+    }
+
+    /**
+     * 申请权限回调
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 102:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    startInstallPermissionSettingActivity();
+                    UpdateApk apk=new UpdateApk();
+                    apk.downloadApk(MainActivity.this,mUpdatePkg);
+                } else {
+                    //  引导用户手动开启安装权限
+                    Toast.makeText(this, "请先授予读取sd卡权限和安装权限，才能完成apk更新", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            default:
+                break;
+
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 103:
+                if (resultCode==RESULT_OK) {
+                    UpdateApk apk = new UpdateApk();
+                    apk.downloadApk(MainActivity.this, mUpdatePkg);
+                } else {
+                    //  引导用户手动开启安装权限
+                    Toast.makeText(this, "请先授予安装权限，才能完成apk更新", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+
     AlertDialog mDlg;
     private String mExpireTime="2018-11-17 00:00:00";
-    private void getAppConfig(){
+    private String mUpdatePkg;
+    private void getAppConfig(final boolean firstInit){
         final ProgressDialog dlg=showLoadingDlg();
         dlg.setCancelable(false);
         HttpUtils.getAppConfig(new MyResponseCallback<AppConfig>() {
@@ -122,15 +233,21 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(final AppConfig data) {
                 dlg.dismiss();
                 if(data!=null) {
+                   LogUtil.logPrintHttpInfo(data.getSystemImage()+","+data.getPackage());
                     App.getInstance().setQueryOrderDuration((int) data.getApiInterval());
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String expireTime=data.getSystemImage();
+
                     Date date =null;
                     try {
-                        date=(Date) sdf.parse(mExpireTime);
+                        String decryptStr=DesUtils.DecodeDES(expireTime,DesUtils.password);
+                        Log.d(TAG, "onSuccess: decryptStr "+decryptStr);
+                        date=(Date) sdf.parse(decryptStr);
                     } catch (ParseException e) {
                         e.printStackTrace();
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
-                    Log.d(TAG, "onSuccess: date "+date.getTime()+","+System.currentTimeMillis());
                     if(date!=null&&date.getTime()<=System.currentTimeMillis()){
                         mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("软件试用期结束，请联系管理员").setPositiveButton("更新", new DialogInterface.OnClickListener() {
                             @Override
@@ -146,14 +263,15 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
                         int versionCode=packageInfo.versionCode;
-                        Log.d(TAG, "onSuccess: versionCOde "+versionCode+","+data.getUpgrade().getSmallVar()+","+data.getUpgrade().getPackage());
-                        if(data.getUpgrade()!=null){
-                            if(data.getUpgrade().getSmallVar()>versionCode){
+                        if(data!=null){
+                            Log.d(TAG, "onSuccess: versionCOde "+versionCode+","+data.getSmallVar()+","+data.getPackage());
+                            if(data.getSmallVar()>versionCode){
                                 mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("有新的版本").setPositiveButton("更新", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        UpdateApk apk=new UpdateApk();
-                                        apk.downloadApk(MainActivity.this,data.getUpgrade().getPackage());
+                                        mUpdatePkg=data.getPackage();
+                                        checkPermission(MainActivity.this);
+
                                     }
                                 }).show();
                             }
@@ -165,13 +283,18 @@ public class MainActivity extends AppCompatActivity {
 
 
                 }
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                    startOrderJobServiceBelowM();
-                } else {
-                    startOrderJobServiceAboveM();
-                }
+                if(firstInit) {
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                        startOrderJobServiceBelowM();
+                    } else {
+                        startOrderJobServiceAboveM();
+                    }
 
-                initBluetoothBiz();
+                    initBluetoothBiz();
+                }else{
+                    OrderPrintBiz.getInstance().startPrintService();
+                    tvStartBluetooth.setText("停止服务");
+                }
             }
 
             @Override
@@ -182,12 +305,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(MyException e) {
                 Log.d(TAG, "onFailure: "+e.getMessage());
+                LogUtil.logPrintHttpInfo(e.getCause()+","+e.getMessage()+","+e.getCode());
+//                Logs.getInstance().writeEvent("http_error",e.getMessage()+",code "+e.getCode());
                 dlg.dismiss();
                 mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("获取配置失败，程序将在获取配置成功后启动").setPositiveButton("重试", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        getAppConfig();
+                        getAppConfig(firstInit);
                     }
                 }).show();
                 mDlg.setCancelable(false);
@@ -366,8 +491,7 @@ public class MainActivity extends AppCompatActivity {
                     tvStartBluetooth.setText("开始服务");
 
                 } else {
-                    OrderPrintBiz.getInstance().startPrintService();
-                    tvStartBluetooth.setText("停止服务");
+                    getAppConfig(false);
                 }
                 break;
 //            case R.id.tv_stop_bluetooth:

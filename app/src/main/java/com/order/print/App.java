@@ -25,6 +25,8 @@ import org.xutils.x;
 
 import java.util.List;
 
+import am.example.printer.util.FileUtils;
+
 /**
  * Created by pt198 on 03/09/2018.
  */
@@ -93,6 +95,7 @@ public class App extends Application {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
                 Log.d(TAG, "uncaughtException: "+throwable.getMessage().toString());
+              
             }
         });
     }

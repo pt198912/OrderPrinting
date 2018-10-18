@@ -2,8 +2,20 @@ package com.order.print.bean;
 
 public class AppConfig {
     long ApiInterval;
-    UpdateInfo Upgrade;
+
     String SystemImage;
+
+    int SmallVar;
+
+    String Package;
+
+    public String getPackage() {
+        return Package;
+    }
+
+    public int getSmallVar() {
+        return SmallVar;
+    }
     public long getApiInterval() {
         return ApiInterval;
     }
@@ -15,20 +27,7 @@ public class AppConfig {
     public void setApiInterval(long apiInterval) {
         ApiInterval = apiInterval;
     }
-    public static class UpdateInfo{
-        private int SmallVar;
-        private String Package;
 
-        public String getPackage() {
-            return Package;
-        }
 
-        public int getSmallVar() {
-            return SmallVar;
-        }
-    }
 
-    public UpdateInfo getUpgrade() {
-        return Upgrade;
-    }
 }

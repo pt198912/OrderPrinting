@@ -69,7 +69,7 @@ public class HttpUtils {
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e(Constants.HTTP_TAG, "request-error:" + ex.toString());
-                callback.onFailure(new MyException("服务器异常"));
+                callback.onFailure(new MyException(ex.toString()));
             }
 
             @Override
