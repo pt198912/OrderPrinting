@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean checkPermission(AppCompatActivity activity) {
         boolean isGranted = true;
         if (android.os.Build.VERSION.SDK_INT >= 23) {
-//            if (activity.checkSelfPermission(Manifest.permission.INSTALL_PACKAGES) != PERMISSION_GRANTED) {
+//            if (activity.checkSelfPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES) != PERMISSION_GRANTED) {
 //                isGranted = false;
 //            }
             if (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
@@ -140,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
             if (!isGranted) {
                 activity.requestPermissions(
                         new String[]{
-//                                Manifest.permission.INSTALL_PACKAGES,
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -157,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
             }else{
 
                 boolean haveInstallPermission = getPackageManager().canRequestPackageInstalls();
-                Log.d(TAG, "checkPermission: haveInstallPermission"+haveInstallPermission);
                 if (haveInstallPermission) {
                     UpdateApk apk=new UpdateApk();
                     apk.downloadApk(MainActivity.this,mUpdatePkg);
@@ -191,11 +189,12 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 102:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    startInstallPermissionSettingActivity();
+
                     UpdateApk apk=new UpdateApk();
                     apk.downloadApk(MainActivity.this,mUpdatePkg);
                 } else {
                     //  引导用户手动开启安装权限
+                    startInstallPermissionSettingActivity();
                     Toast.makeText(this, "请先授予读取sd卡权限和安装权限，才能完成apk更新", Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -211,11 +210,15 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case 103:
-                if (resultCode==RESULT_OK) {
+                Log.d(TAG, "onActivityResult: resultCode "+resultCode);
+                boolean haveInstallPermission = getPackageManager().canRequestPackageInstalls();
+                Log.d(TAG, "checkPermission: haveInstallPermission"+haveInstallPermission);
+                if (haveInstallPermission) {
                     UpdateApk apk = new UpdateApk();
                     apk.downloadApk(MainActivity.this, mUpdatePkg);
                 } else {
                     //  引导用户手动开启安装权限
+                    startInstallPermissionSettingActivity();
                     Toast.makeText(this, "请先授予安装权限，才能完成apk更新", Toast.LENGTH_SHORT).show();
                 }
                 break;

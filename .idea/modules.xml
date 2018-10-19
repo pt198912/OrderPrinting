@@ -3,11 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/LibMarsdaemon/LibMarsdaemon.iml" filepath="$PROJECT_DIR$/LibMarsdaemon/LibMarsdaemon.iml" />
-      <module fileurl="file://C:/Users/pt198/android_studio_workspace/OrderPrinting/LibMarsdaemon/LibMarsdaemon.iml" filepath="C:/Users/pt198/android_studio_workspace/OrderPrinting/LibMarsdaemon/LibMarsdaemon.iml" />
       <module fileurl="file://$PROJECT_DIR$/OrderPrinting.iml" filepath="$PROJECT_DIR$/OrderPrinting.iml" />
-      <module fileurl="file://C:/Users/pt198/android_studio_workspace/OrderPrinting/OrderPrinting.iml" filepath="C:/Users/pt198/android_studio_workspace/OrderPrinting/OrderPrinting.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:/Users/pt198/android_studio_workspace/OrderPrinting/app/app.iml" filepath="C:/Users/pt198/android_studio_workspace/OrderPrinting/app/app.iml" />
     </modules>
   </component>
 </project>

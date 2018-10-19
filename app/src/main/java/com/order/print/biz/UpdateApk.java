@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.order.print.App;
+import com.order.print.ui.MainActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,7 +28,7 @@ import java.net.URL;
 import am.example.printer.util.StringUtils;
 
 public class UpdateApk {
-    private String mSavedPath;
+    private String mSavedPath=Environment.getExternalStorageDirectory() + "/";
     public void downloadApk(Context context, String url)
     {
         if(StringUtils.isNullOrEmpty(url)){
@@ -37,7 +38,9 @@ public class UpdateApk {
         mDownloadDialog=new ProgressDialog(context);
         mDownloadDialog.setMessage("下载中...%0");
         mDownloadDialog.setCancelable(true);
-        mDownloadDialog.show();
+        if(!mDownloadDialog.isShowing()) {
+            mDownloadDialog.show();
+        }
         // 启动新线程下载软件
         new DownloadApkThread(url).start();
     }
@@ -62,7 +65,7 @@ public class UpdateApk {
                 case DOWNLOAD_FINISH:
                     // 安装文件
                     mDownloadDialog.dismiss();
-                    installApk();
+                    installApk(App.getInstance());
 
                     break;
                 default:
@@ -120,7 +123,7 @@ public class UpdateApk {
                     FileOutputStream fos = new FileOutputStream(apkFile);
                     int count = 0;
                     // 缓存
-                    byte buf[] = new byte[1024*512];
+                    byte buf[] = new byte[1024*40];
                     // 写入到文件中
                     do
                     {
@@ -158,31 +161,28 @@ public class UpdateApk {
     /**
      * 安装APK文件
      */
-    private void installApk()
+    private void installApk(Context context)
     {
         File apkfile = new File(mSavedPath, "orderPrint.apk");
         if (!apkfile.exists())
         {
             return;
         }
+
         // 通过Intent安装APK文件
-//        Intent i = new Intent(Intent.ACTION_VIEW);
-//        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        i.setDataAndType(Uri.parse("file://" + apkfile.toString()), "application/vnd.android.package-archive");
-//        App.getInstance().startActivity(i);
-        //安装应用
-        Intent installIntent = new Intent(Intent.ACTION_VIEW);
-        installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        Uri uri;
-        if (Build.VERSION.SDK_INT >= 24) {
-            uri = FileProvider.getUriForFile(App.getInstance(), App.getInstance().getPackageName() + ".fileprovider", apkfile);
-            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } else {
-            uri = Uri.fromFile(apkfile);
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri uriForFile = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", apkfile);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setDataAndType(uriForFile, context.getContentResolver().getType(uriForFile));
+        }else {
+            intent.setDataAndType(Uri.fromFile(apkfile), "application/vnd.android.package-archive");
         }
-        installIntent.setDataAndType(uri, "application/vnd.android.package-archive");
-        installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        App.getInstance().startActivity(installIntent);
+        context.startActivity(intent);
+
+
     }
 
 }
