@@ -15,6 +15,7 @@ import com.order.print.receiver.Receiver1;
 import com.order.print.receiver.Receiver2;
 import com.order.print.service.OrderJobService;
 import com.order.print.service.Service2;
+import com.order.print.ui.MainActivity;
 import com.order.print.util.HttpUtils;
 import com.tencent.stat.MtaSDkException;
 import com.tencent.stat.StatService;
@@ -23,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.x;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import am.example.printer.util.FileUtils;
@@ -56,7 +58,16 @@ public class App extends Application {
     public static App getInstance() {
         return sInstance;
     }
-//    private BluetoothDevice mConnectedDevice;
+    private WeakReference<MainActivity> mainActivityWeakReference;
+
+    public void setMainActivityWeakReference(WeakReference<MainActivity> mainActivityWeakReference) {
+        this.mainActivityWeakReference = mainActivityWeakReference;
+    }
+
+    public WeakReference<MainActivity> getMainActivityWeakReference() {
+        return mainActivityWeakReference;
+    }
+    //    private BluetoothDevice mConnectedDevice;
 //
 //    public void setConnectedDevice(BluetoothDevice connectedDevice) {
 //        this.mConnectedDevice = connectedDevice;

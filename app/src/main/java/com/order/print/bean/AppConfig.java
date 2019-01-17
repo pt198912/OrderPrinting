@@ -1,13 +1,13 @@
 package com.order.print.bean;
 
 public class AppConfig {
-    long ApiInterval;
+    private long ApiInterval;
 
-    String SystemImage;
+    private String SystemImage;
 
-    int SmallVar;
+    private int SmallVar;
 
-    String Package;
+    private String Package;
 
     public String getPackage() {
         return Package;
@@ -28,6 +28,15 @@ public class AppConfig {
         ApiInterval = apiInterval;
     }
 
+    public void setSystemImage(String systemImage) {
+        SystemImage = systemImage;
+    }
 
+    public void setSmallVar(int smallVar) {
+        SmallVar = smallVar;
+    }
 
+    public void setPackage(String aPackage) {
+        Package = aPackage;
+    }
 }

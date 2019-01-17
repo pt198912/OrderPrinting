@@ -7,8 +7,8 @@ android {
         applicationId "com.order.print"
         minSdkVersion 18
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             //根据需要 自行选择添加的对应cpu类型的.so库。

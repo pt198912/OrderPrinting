@@ -53,6 +53,7 @@ import com.order.print.util.IntentUtils;
 import com.order.print.util.LogUtil;
 import com.order.print.util.Logs;
 
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -87,10 +88,13 @@ public class MainActivity extends AppCompatActivity {
     TextView tvTestPrint;
     @BindView(R.id.tv_new_order)
     TextView tvNewOrder;
+    @BindView(R.id.tv_version_name)
+    TextView tvVersionName;
     //    @BindView(R.id.tv_stop_bluetooth)
 //    TextView tvStopBluetooth;
     // JobService，执行系统任务
     private JobSchedulerManager mJobManager;
+
     // 1像素Activity管理类
     private ScreenManager mScreenManager;
     // 动态注册锁屏等广播
@@ -108,11 +112,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        App.getInstance().setMainActivityWeakReference(new WeakReference<MainActivity>(this));
         if (App.getInstance().isPrintOrderFlag()) {
             tvStartBluetooth.setText("停止服务");
         } else {
             tvStartBluetooth.setText("开始服务");
         }
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo = getPackageManager().getPackageInfo(getPackageName(),0);
+            tvVersionName.setText("版本号："+packageInfo.versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
         getAppConfig(true);
 
 //        startTimer();
@@ -180,6 +193,12 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 103);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        App.getInstance().setMainActivityWeakReference(null);
+    }
+
     /**
      * 申请权限回调
      */
@@ -240,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                     App.getInstance().setQueryOrderDuration((int) data.getApiInterval());
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     String expireTime=data.getSystemImage();
-
+                    Log.d(TAG, "onSuccess: expireTime "+expireTime);
                     Date date =null;
                     try {
                         String decryptStr=DesUtils.DecodeDES(expireTime,DesUtils.password);
@@ -252,11 +271,11 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     if(date!=null&&date.getTime()<=System.currentTimeMillis()){
-                        mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("软件试用期结束，请联系管理员").setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                        mDlg=new AlertDialog.Builder(MainActivity.this).setMessage("软件试用期结束，请联系管理员").setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 finish();
-                                System.exit(0);
+//                                System.exit(0);
                             }
                         }).show();
                         mDlg.setCancelable(false);
@@ -277,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     }
                                 }).show();
+                                mDlg.setCancelable(false);
                             }
                         }
                     } catch (PackageManager.NameNotFoundException e) {
@@ -513,13 +533,13 @@ public class MainActivity extends AppCompatActivity {
         mScreenManager = ScreenManager.getScreenManagerInstance(this);
 //        mScreenListener.setScreenReceiverListener(mScreenListenerer);
         // 2. 启动系统任务
-        mJobManager = JobSchedulerManager.getJobSchedulerInstance(this);
-        mJobManager.startJobScheduler();
+//        mJobManager = JobSchedulerManager.getJobSchedulerInstance(this);
+//        mJobManager.startJobScheduler();
         // 3. 华为推送保活，允许接收透传
-        mHwPushManager = HwPushManager.getInstance(this);
-        mHwPushManager.startRequestToken();
-        mHwPushManager.isEnableReceiveNormalMsg(true);
-        mHwPushManager.isEnableReceiverNotifyMsg(true);
+//        mHwPushManager = HwPushManager.getInstance(this);
+//        mHwPushManager.startRequestToken();
+//        mHwPushManager.isEnableReceiveNormalMsg(true);
+//        mHwPushManager.isEnableReceiverNotifyMsg(true);
         //  启动前台Service
         startDaemonService();
         //  启动播放音乐Service

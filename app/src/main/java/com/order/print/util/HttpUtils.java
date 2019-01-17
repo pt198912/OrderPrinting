@@ -3,6 +3,7 @@ package com.order.print.util;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.order.print.bean.AppConfig;
 import com.order.print.biz.UserInfoManager;
 import com.order.print.net.MyException;
 import com.order.print.net.MyRequest;
@@ -48,9 +49,13 @@ public class HttpUtils {
         headers.put("XX-Token", UserInfoManager.getInstance().getToken());
         MyRequest.sendPostRequest(HttpApi.RESET_ORDER_STATUS,headers,paras,cb,cls,true);
     }
-    public static <T> void getAppConfig(final MyResponseCallback<T> callback, final Class<T> cls){
+
+    private static final String TAG = "HttpUtils";
+    public static <T> void getAppConfig(final MyResponseCallback<T> callback,final Class<T> cls){
         RequestParams reParams = new RequestParams(HttpApi.GET_APP_CONFIG);
         reParams.setCharset("utf-8");
+
+
         x.http().request(HttpMethod.GET, reParams, new Callback.CommonCallback<String>() {
 
 
@@ -58,11 +63,12 @@ public class HttpUtils {
             public void onSuccess(String result) {
 
                 Log.i(Constants.HTTP_TAG, "response-data:" + result);
-                T response= JSON.parseObject(result,cls);
+//                result="{\"ApiInterval\":5000,\"SystemImage\":\"5409CC1416B8B1CE9762A24F03ECDC289B3D39167006020B\",\"SmallVar\":2,\"Package\":\"http://fjhaoshi.test.yiqianye.vip/upload/print/Update/android/2.apk\"}";
+                T response= JSON.parseObject(result,cls );
                 if (null != response) {
                     callback.onSuccess(response);
                 }else{
-                    callback.onFailure(new MyException());
+                    callback.onFailure(new MyException("response is null"));
                 }
             }
 

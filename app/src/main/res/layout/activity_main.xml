@@ -8,7 +8,13 @@
     tools:context="com.order.print.ui.MainActivity"
     android:gravity="center">
 
-
+    <TextView android:id="@+id/tv_version_name"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        android:text=""
+        android:layout_marginBottom="30dp"/>
     <TextView
         android:id="@+id/tv_setting"
         android:layout_width="200dp"
@@ -17,7 +23,7 @@
         android:gravity="center"
         android:background="@drawable/bg_text_selector"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dp"
+
         />
     <TextView
         android:id="@+id/tv_order_list"

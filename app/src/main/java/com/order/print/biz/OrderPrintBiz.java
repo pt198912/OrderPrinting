@@ -76,6 +76,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
     public void init(){
 //        bindService();
 //        startTimer();
+        mLoop=true;
         getOrderList();
         startPrintTask();
     }
@@ -287,6 +288,7 @@ public class OrderPrintBiz implements MyResponseCallback<QueryOrderResult>, Prin
         if(mTimer!=null){
             mTimer.cancel();
         }
+        mHandler.removeMessages(MSG_GET_ORDERS);
     }
     private void getOrderList() {
         Log.d(TAG, "getOrderList: ");

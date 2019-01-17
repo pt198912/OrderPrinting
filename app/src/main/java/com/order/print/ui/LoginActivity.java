@@ -71,6 +71,7 @@ public class LoginActivity extends BaseActivity implements MyResponseCallback<Lo
         UserInfoManager.getInstance().setPwd(pwd);
         UserInfoManager.getInstance().setToken(data.getToken());
         IntentUtils.startActivity(this, MainActivity.class);
+        finish();
     }
 
     @Override

@@ -22,7 +22,7 @@ public class PrintService extends Service {
         {
             setForegroundService();
         }
-        OrderPrintBiz.getInstance().init();
+
     }
 
     @TargetApi(Build.VERSION_CODES.N)
@@ -63,7 +63,7 @@ public class PrintService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        OrderPrintBiz.getInstance().init();
         return Service.START_STICKY;
     }
 }

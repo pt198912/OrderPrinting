@@ -45,6 +45,7 @@ public class WelcomeActivity extends BaseActivity implements MyResponseCallback<
     public void onSuccess(LoginBean data) {
         UserInfoManager.getInstance().setToken(data.getToken());
         IntentUtils.startActivity(this,MainActivity.class);
+        finish();
     }
 
     @Override

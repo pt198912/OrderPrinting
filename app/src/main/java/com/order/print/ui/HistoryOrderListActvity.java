@@ -1,5 +1,6 @@
 package com.order.print.ui;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -75,18 +76,39 @@ public class HistoryOrderListActvity extends BaseActivity {
         });
 
     }
+    private ProgressDialog pdSearch;
+    private ProgressDialog showLoadingDlg() {
+        pdSearch = ProgressDialog.show(this, "", "连接中", true, true);
+        pdSearch.setCanceledOnTouchOutside(false);
+        pdSearch.show();
+        pdSearch.setCancelable(false);
+        return pdSearch;
+    }
 
     private void initView() {
         tvTitle.setText("历史订单");
         tvRight.setVisibility(View.VISIBLE);
-//        tvRight.setText("打印");
-//        tvRight.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                OrderPrintBiz.getInstance().addHistoryOrderList(mDatas);
-//                Toast.makeText(HistoryOrderListActvity.this, "已添加到打印队列", Toast.LENGTH_SHORT).show();
-//            }
-//        });
+        tvRight.setText("清空");
+        tvRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLoadingDlg();
+                CustomThreadPool.getInstance().submit(new Runnable() {
+                   @Override
+                   public void run() {
+                       DbManager.getInstance().deleteAll();
+                       runOnUiThread(new Runnable() {
+                           @Override
+                           public void run() {
+                               mDatas.clear();
+                               mAdapter.notifyDataSetChanged();
+                               pdSearch.dismiss();
+                           }
+                       });
+                   }
+               });
+            }
+        });
         mAdapter=new OrderListAdapter();
         lvHis.setAdapter(mAdapter);
         lvHis.setOnItemClickListener(new AdapterView.OnItemClickListener() {

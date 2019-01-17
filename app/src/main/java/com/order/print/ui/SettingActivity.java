@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.order.print.App;
 import com.order.print.R;
 import com.order.print.biz.BluetoothBiz;
 import com.order.print.biz.OrderPrintBiz;
@@ -42,7 +43,14 @@ public class SettingActivity extends BaseActivity {
                 UserInfoManager.getInstance().setPwd(null);
                 UserInfoManager.getInstance().setToken(null);
                 OrderPrintBiz.getInstance().release();
+                if(App.getInstance().getMainActivityWeakReference()!=null){
+                    MainActivity act=App.getInstance().getMainActivityWeakReference().get();
+                    if(act!=null){
+                        act.finish();
+                    }
+                }
                 IntentUtils.startActivity(SettingActivity.this,LoginActivity.class);
+                finish();
             }
         });
     }

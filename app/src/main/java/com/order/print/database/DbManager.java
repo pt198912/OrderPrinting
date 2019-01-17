@@ -79,6 +79,11 @@ public class DbManager {
             mCr.insert(OrderContentProvider.ORDER_ITEM_URI, values);
         }
     }
+    public void deleteAll(){
+        int num=mCr.delete(OrderContentProvider.ORDER_URI,null,null);
+        mCr.delete(OrderContentProvider.ADDR_URI,null,null);
+        mCr.delete(OrderContentProvider.ORDER_ITEM_URI,null,null);
+    }
     public List<Order> queryAllOrders(){
         Cursor c=mCr.query(OrderContentProvider.ORDER_URI,null,null,null,null);
         Log.d(TAG, "queryAllOrders: "+c.getCount());
